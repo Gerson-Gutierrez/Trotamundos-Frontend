@@ -7,6 +7,7 @@ import { opcionesHeader, temaNavegacion } from './tema';
 import AuthStack from './AuthStack';
 import MainTabNavigator from './MainTabNavigator';
 import PublicacionStack from './PublicacionStack';
+import SuperAdminStack from './SuperAdminStack';
 import DetallePublicacionScreen from '../screens/publicaciones/DetallePublicacionScreen';
 import EditarPerfilScreen from '../screens/main/EditarPerfilScreen';
 import GlobeViewScreen from '../screens/main/GlobeViewScreen';
@@ -21,7 +22,7 @@ const linking = {
 
 // Enrutador raíz: decide entre el flujo de autenticación y la app.
 export default function AppNavigator() {
-  const { autenticado, cargandoSesion } = useAuth();
+  const { autenticado, esSuperAdmin, cargandoSesion } = useAuth();
 
   if (cargandoSesion) return <LoadingSpinner mensaje="Cargando sesión…" />;
 
@@ -29,6 +30,9 @@ export default function AppNavigator() {
     <NavigationContainer theme={temaNavegacion} linking={linking}>
       {!autenticado ? (
         <AuthStack />
+      ) : esSuperAdmin ? (
+        // El superadministrador tiene su propia interfaz, sin las tabs de viajero ni el panel de admins
+        <SuperAdminStack />
       ) : (
         <Root.Navigator screenOptions={opcionesHeader}>
           <Root.Screen name="MainTabs" component={MainTabNavigator} options={{ headerShown: false }} />

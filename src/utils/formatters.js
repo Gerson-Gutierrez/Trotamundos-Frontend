@@ -13,6 +13,18 @@ export function formatearFecha(iso) {
   return fecha.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+const HORAS_RETENCION = 24;
+
+// Texto con el tiempo que falta para que un reporte resuelto / alerta leída se elimine solo.
+export function textoAutoEliminacion(isoResolucion) {
+  if (!isoResolucion) return '';
+  const restanteMs = new Date(isoResolucion).getTime() + HORAS_RETENCION * 3600 * 1000 - Date.now();
+  if (restanteMs <= 0) return 'Se eliminará en breve';
+  const horas = Math.floor(restanteMs / 3600000);
+  if (horas >= 1) return `Se elimina automáticamente en ${horas} h`;
+  return `Se elimina automáticamente en ${Math.max(1, Math.ceil(restanteMs / 60000))} min`;
+}
+
 export function formatearFechaHora(iso) {
   if (!iso) return '';
   const fecha = new Date(iso);

@@ -73,6 +73,7 @@ export function AuthProvider({ children }) {
   const value = useMemo(() => ({
     usuario,
     esAdmin: !!usuario?.esAdmin,
+    esSuperAdmin: !!usuario?.esSuperAdmin,
     autenticado: !!usuario,
     cargandoSesion,
     login,

@@ -16,7 +16,7 @@ export default function AuthStack() {
       <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Crear cuenta' }} />
       <Stack.Screen name="OlvidoPassword" component={OlvidoPasswordScreen} options={{ title: 'Recuperar contraseña' }} />
       <Stack.Screen name="RestablecerPassword" component={RestablecerPasswordScreen} options={{ title: 'Nueva contraseña' }} />
-      <Stack.Screen name="AceptarInvitacionAdmin" component={AceptarInvitacionAdminScreen} options={{ title: 'Cuenta de administrador' }} />
+      <Stack.Screen name="AceptarInvitacionAdmin" component={AceptarInvitacionAdminScreen} options={{ title: 'Activar cuenta' }} />
     </Stack.Navigator>
   );
 }

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { StyleSheet, Text } from 'react-native';
+import { colors } from '../../constants/colors';
 import Pantalla from '../../components/common/Pantalla';
 import Titulo from '../../components/common/Titulo';
 import Input from '../../components/common/Input';
@@ -34,6 +36,9 @@ export default function OlvidoPasswordScreen({ navigation }) {
       </Titulo>
 
       <Mensaje texto={error} />
+      <Text style={styles.nota}>
+        Si tu cuenta es de administrador, la contraseña la restablece un superadministrador.
+      </Text>
       {enviado && (
         <Mensaje tipo="exito" texto="Si el correo está registrado, vas a recibir un código. Revisá tu bandeja de entrada." />
       )}
@@ -52,3 +57,7 @@ export default function OlvidoPasswordScreen({ navigation }) {
     </Pantalla>
   );
 }
+
+const styles = StyleSheet.create({
+  nota: { color: colors.textoSecundario, fontSize: 12, marginBottom: 12 },
+});

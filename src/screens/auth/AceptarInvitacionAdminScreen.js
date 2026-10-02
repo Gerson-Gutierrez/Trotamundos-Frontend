@@ -36,7 +36,7 @@ export default function AceptarInvitacionAdminScreen({ route, navigation }) {
 
   return (
     <Pantalla>
-      <Titulo subtitulo="Completá tus datos para crear tu cuenta de administrador.">Aceptar invitación</Titulo>
+      <Titulo subtitulo="Completá tus datos para crear tu cuenta.">Aceptar invitación</Titulo>
 
       <Mensaje texto={error} />
       {listo ? (

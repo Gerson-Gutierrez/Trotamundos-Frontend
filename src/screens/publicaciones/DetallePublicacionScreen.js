@@ -73,8 +73,12 @@ export default function DetallePublicacionScreen({ route, navigation }) {
       <SeccionRecomendaciones recomendacion={p.recomendacion} />
 
       <View style={styles.acciones}>
-        {(esAutor || esAdmin) && <Button titulo="Eliminar publicación" variant="peligro" onPress={eliminar} />}
-        {!esAutor && <Button titulo="Denunciar publicación" variant="secundario" onPress={() => setReportando(true)} />}
+        {(esAutor || esAdmin) && (
+          <Button titulo="Eliminar publicación" variant="peligro" onPress={eliminar} />
+        )}
+        {!esAutor && !esAdmin && (
+          <Button titulo="Denunciar publicación" variant="secundario" onPress={() => setReportando(true)} />
+        )}
       </View>
 
       <ModalReporte visible={reportando} publicacionId={id} onCerrar={() => setReportando(false)} />

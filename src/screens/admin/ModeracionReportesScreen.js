@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { colors } from '../../constants/colors';
 import { reportesApi } from '../../api/reportesApi';
-import { formatearFechaHora } from '../../utils/formatters';
+import { formatearFechaHora, textoAutoEliminacion } from '../../utils/formatters';
 
 const ESTADOS = ['Pendiente', 'EnRevision', 'Resuelto', 'Desestimado'];
 const COLOR_ESTADO = { Pendiente: colors.advertencia, EnRevision: '#60a5fa', Resuelto: colors.exito, Desestimado: colors.textoSecundario };
@@ -49,6 +49,7 @@ export default function ModeracionReportesScreen({ navigation }) {
               <Text style={styles.texto}>Publicación #{item.publicacionId} · por {item.nombreUsuarioReportador}</Text>
               {item.detalle ? <Text style={styles.detalle} numberOfLines={2}>{item.detalle}</Text> : null}
               <Text style={styles.fecha}>{formatearFechaHora(item.fechaReporte)}</Text>
+              {item.fechaResolucion ? <Text style={styles.fecha}>{textoAutoEliminacion(item.fechaResolucion)}</Text> : null}
             </Pressable>
           )}
         />

@@ -6,7 +6,7 @@ import Titulo from '../../components/common/Titulo';
 import Mensaje from '../../components/common/Mensaje';
 import { colors } from '../../constants/colors';
 import { reportesApi } from '../../api/reportesApi';
-import { formatearFechaHora, mensajeError } from '../../utils/formatters';
+import { formatearFechaHora, mensajeError, textoAutoEliminacion } from '../../utils/formatters';
 
 export default function DashboardAdminScreen({ navigation }) {
   const [pendientes, setPendientes] = useState(0);
@@ -28,7 +28,7 @@ export default function DashboardAdminScreen({ navigation }) {
   const marcarLeida = async (n) => {
     if (n.leida) return;
     await reportesApi.marcarLeida(n.notificacionId).catch(() => {});
-    setNotificaciones((prev) => prev.map((x) => (x.notificacionId === n.notificacionId ? { ...x, leida: true } : x)));
+    setNotificaciones((prev) => prev.map((x) => (x.notificacionId === n.notificacionId ? { ...x, leida: true, fechaLectura: new Date().toISOString() } : x)));
   };
 
   const noLeidas = notificaciones.filter((n) => !n.leida).length;
@@ -49,9 +49,6 @@ export default function DashboardAdminScreen({ navigation }) {
       <Pressable style={styles.enlace} onPress={() => navigation.navigate('UsuariosAdmin')}>
         <Text style={styles.enlaceTexto}>👥 Gestionar usuarios</Text>
       </Pressable>
-      <Pressable style={styles.enlace} onPress={() => navigation.navigate('InvitarAdmin')}>
-        <Text style={styles.enlaceTexto}>✉️ Invitar administrador</Text>
-      </Pressable>
 
       <Text style={styles.subtitulo}>Alertas</Text>
       {notificaciones.length === 0 && <Text style={styles.vacio}>No hay alertas.</Text>}
@@ -60,6 +57,7 @@ export default function DashboardAdminScreen({ navigation }) {
           <Text style={styles.notifTitulo}>{!n.leida ? '● ' : ''}{n.titulo}</Text>
           <Text style={styles.notifMensaje}>{n.mensaje}</Text>
           <Text style={styles.notifFecha}>{formatearFechaHora(n.fechaCreacion)}</Text>
+          {n.fechaLectura ? <Text style={styles.notifFecha}>{textoAutoEliminacion(n.fechaLectura)}</Text> : null}
         </Pressable>
       ))}
     </Pantalla>
