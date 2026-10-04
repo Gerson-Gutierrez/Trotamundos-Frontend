@@ -24,5 +24,5 @@ export default function Pantalla({ children, scroll = true, style, contenidoStyl
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.fondo },
   flex: { flex: 1 },
-  contenido: { padding: 20, paddingBottom: 40 },
+  contenido: { padding: 20, paddingBottom: 40, width: '100%', maxWidth: 720, alignSelf: 'center' },
 });

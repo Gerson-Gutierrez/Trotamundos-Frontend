@@ -74,17 +74,17 @@ function Tarjeta({ numero, etiqueta, onPress }) {
 }
 
 const styles = StyleSheet.create({
-  tarjetas: { flexDirection: 'row', gap: 12, marginBottom: 16 },
-  tarjeta: { flex: 1, backgroundColor: colors.superficie, borderWidth: 1, borderColor: colors.borde, borderRadius: 14, padding: 16, alignItems: 'center' },
+  tarjetas: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 16 },
+  tarjeta: { flexGrow: 1, flexBasis: 140, backgroundColor: colors.superficie, borderWidth: 1, borderColor: colors.borde, borderRadius: 14, padding: 16, alignItems: 'center' },
   numero: { color: colors.primario, fontSize: 32, fontWeight: '900' },
   etiqueta: { color: colors.textoSecundario, fontSize: 12, marginTop: 4, textAlign: 'center' },
   enlace: { backgroundColor: colors.superficie, borderWidth: 1, borderColor: colors.borde, borderRadius: 12, padding: 14, marginBottom: 10 },
   enlaceTexto: { color: colors.texto, fontWeight: '600', fontSize: 15 },
   subtitulo: { color: colors.texto, fontSize: 17, fontWeight: '700', marginTop: 20, marginBottom: 10 },
   vacio: { color: colors.textoSecundario },
-  notif: { backgroundColor: colors.superficie, borderRadius: 12, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: colors.borde },
+  notif: { flexShrink: 0, backgroundColor: colors.superficie, borderRadius: 12, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: colors.borde },
   notifNoLeida: { borderColor: colors.advertencia },
-  notifTitulo: { color: colors.texto, fontWeight: '700' },
+  notifTitulo: { color: colors.texto, fontWeight: '700', flexShrink: 1 },
   notifMensaje: { color: colors.textoSecundario, marginTop: 4, fontSize: 13 },
   notifFecha: { color: colors.textoSecundario, marginTop: 6, fontSize: 11 },
 });

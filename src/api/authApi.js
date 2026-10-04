@@ -10,4 +10,5 @@ export const authApi = {
     api.post('/admin/accept-invitation', { token, fullName, password }).then((r) => r.data),
   obtenerPerfil: () => api.get('/auth/perfil').then((r) => r.data),
   actualizarPerfil: (datos) => api.put('/auth/perfil', datos).then((r) => r.data),
+  eliminarCuenta: (password) => api.delete('/auth/cuenta', { data: { password } }).then((r) => r.data),
 };

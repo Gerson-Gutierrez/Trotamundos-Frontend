@@ -50,7 +50,7 @@ export default function CorreosBloqueadosScreen() {
 }
 
 const styles = StyleSheet.create({
-  lista: { padding: 14 },
+  lista: { padding: 14, width: '100%', maxWidth: 720, alignSelf: 'center' },
   vacio: { color: colors.textoSecundario, textAlign: 'center', marginTop: 24 },
   item: { backgroundColor: colors.superficie, borderWidth: 1, borderColor: colors.borde, borderRadius: 12, padding: 12, marginBottom: 10 },
   email: { color: colors.texto, fontWeight: '700', fontSize: 15 },

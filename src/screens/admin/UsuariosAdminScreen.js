@@ -57,7 +57,7 @@ export default function UsuariosAdminScreen() {
             ) : (
               <View style={[styles.avatar, styles.avatarVacio]}><Text style={styles.iniciales}>{iniciales(`${u.nombre} ${u.apellido}`)}</Text></View>
             )}
-            <View style={{ flex: 1 }}>
+            <View style={styles.info}>
               <Text style={styles.nombre}>{u.nombre} {u.apellido} {u.esAdmin ? '🛡️' : ''}{u.bloqueado ? ' 🚫' : ''}</Text>
               <Text style={styles.dato}>{u.email}</Text>
               <Text style={styles.dato}>{u.nacionalidad} · desde {formatearFecha(u.fechaRegistro)}</Text>
@@ -79,15 +79,16 @@ export default function UsuariosAdminScreen() {
 }
 
 const styles = StyleSheet.create({
-  lista: { padding: 14 },
+  lista: { padding: 14, width: '100%', maxWidth: 720, alignSelf: 'center' },
   item: { backgroundColor: colors.superficie, borderWidth: 1, borderColor: colors.borde, borderRadius: 12, padding: 12, marginBottom: 10 },
   itemBloqueado: { borderColor: colors.peligro, opacity: 0.8 },
   fila: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.superficieClara },
+  info: { flex: 1, minWidth: 0 },
+  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.superficieClara, flexShrink: 0 },
   avatarVacio: { alignItems: 'center', justifyContent: 'center' },
   iniciales: { color: colors.primario, fontWeight: '800' },
   nombre: { color: colors.texto, fontWeight: '700', fontSize: 15 },
   dato: { color: colors.textoSecundario, fontSize: 12 },
-  acciones: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  boton: { flex: 1, minHeight: 40, paddingVertical: 8 },
+  acciones: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  boton: { flexGrow: 1, flexBasis: 130, minHeight: 40, paddingVertical: 8 },
 });

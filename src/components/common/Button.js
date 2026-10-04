@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import { colors } from '../../constants/colors';
 
 // variant: 'primario' | 'secundario' | 'peligro' | 'texto'
-export default function Button({ titulo, onPress, cargando, deshabilitado, variant = 'primario', style, icono }) {
+export default function Button({ titulo, onPress, cargando, deshabilitado, variant = 'primario', style, textoStyle, icono }) {
   const inactivo = cargando || deshabilitado;
   return (
     <Pressable
@@ -20,7 +20,7 @@ export default function Button({ titulo, onPress, cargando, deshabilitado, varia
       {cargando ? (
         <ActivityIndicator color={variant === 'primario' ? colors.fondo : colors.primario} />
       ) : (
-        <Text style={[styles.texto, styles[`texto_${variant}`]]}>
+        <Text style={[styles.texto, styles[`texto_${variant}`], textoStyle]}>
           {icono ? `${icono}  ` : ''}{titulo}
         </Text>
       )}
@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 50,
+    maxWidth: '100%',
   },
   v_primario: { backgroundColor: colors.primario },
   v_secundario: { backgroundColor: colors.superficieClara, borderWidth: 1, borderColor: colors.borde },
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
   v_texto: { backgroundColor: 'transparent', minHeight: 40, paddingVertical: 8 },
   presionado: { opacity: 0.8 },
   inactivo: { opacity: 0.5 },
-  texto: { fontSize: 16, fontWeight: '700' },
+  texto: { fontSize: 16, fontWeight: '700', textAlign: 'center', flexShrink: 1 },
   texto_primario: { color: colors.fondo },
   texto_secundario: { color: colors.texto },
   texto_peligro: { color: colors.blanco },

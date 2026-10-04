@@ -65,11 +65,11 @@ export default function CuentasAdminScreen() {
 }
 
 const styles = StyleSheet.create({
-  lista: { padding: 14 },
+  lista: { padding: 14, width: '100%', maxWidth: 720, alignSelf: 'center' },
   vacio: { color: colors.textoSecundario, textAlign: 'center', marginTop: 24 },
   item: { backgroundColor: colors.superficie, borderWidth: 1, borderColor: colors.borde, borderRadius: 12, padding: 12, marginBottom: 10 },
   nombre: { color: colors.texto, fontWeight: '700', fontSize: 15 },
   dato: { color: colors.textoSecundario, fontSize: 12, marginTop: 2 },
-  acciones: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  boton: { flex: 1, minHeight: 40, paddingVertical: 8 },
+  acciones: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  boton: { flexGrow: 1, flexBasis: 130, minHeight: 40, paddingVertical: 8 },
 });
