@@ -41,7 +41,7 @@ import { Platform } from 'react-native';
 const PUERTO_BACKEND = 5200;
 
 // ⚠️ PON AQUÍ LA IPV4 DE TU COMPUTADORA (ej. 192.168.0.10)
-const IP_COMPUTADORA = '192.168.1.XX'; 
+const IP_COMPUTADORA = '192.168.100.7'; 
 
 function resolverApiUrl() {
   if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
