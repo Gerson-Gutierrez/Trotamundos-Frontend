@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import GlobeWebView from '../../components/globe/GlobeWebView';
-import TarjetaPublicacion from '../../components/publicacion/TarjetaPublicacion';
+import TarjetaPublicacionCompacta from '../../components/publicacion/TarjetaPublicacionCompacta';
 import SelectorPais from '../../components/common/SelectorPais';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import Mensaje from '../../components/common/Mensaje';
@@ -15,7 +15,8 @@ import { mensajeError } from '../../utils/formatters';
 
 export default function HomeScreen({ navigation, route }) {
   const globoRef = useRef(null);
-  const { porIso } = usePaises();
+  const { paises, porIso } = usePaises();
+  const { height } = useWindowDimensions();
   // paisTocado: solo se muestra el nombre (un toque). pais: filtro aplicado (doble toque).
   const [paisTocado, setPaisTocado] = useState(null);
   const [pais, setPais] = useState(null);
@@ -90,22 +91,30 @@ export default function HomeScreen({ navigation, route }) {
   // Refresca el feed al volver (p. ej. después de publicar)
   useFocusEffect(useCallback(() => { if (!cargando) recargar(); }, [])); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ISO de cada publicación para mostrar la bandera (el feed trae paisId / nombrePais)
+  const isoDe = useMemo(() => {
+    const porId = {}, porNombre = {};
+    for (const p of paises) {
+      porId[p.paisId] = p.codigoIso;
+      porNombre[p.nombre?.toLowerCase()] = p.codigoIso;
+    }
+    return (pub) => pub.codigoIso || porId[pub.paisId] || porNombre[pub.nombrePais?.toLowerCase()] || null;
+  }, [paises]);
+
   // El país tocado todavía no filtra; el confirmado sí
   const mostrandoPais = pais && paisTocado && pais.paisId === paisTocado.paisId;
 
   const cabecera = (
-    <View>
+    <View style={styles.fijo}>
       <View style={styles.encabezado}>
         {/* Tocar el logo actualiza el feed (sin pull-to-refresh, que estorbaba al usar el globo) */}
         <Pressable onPress={recargar} disabled={refrescando} hitSlop={8}>
           <Text style={styles.marca}>🌍 Trotamundos{refrescando ? ' …' : ''}</Text>
         </Pressable>
-        <Pressable onPress={() => navigation.navigate('GlobeView')}>
-          <Text style={styles.enlace}>Globo completo</Text>
-        </Pressable>
       </View>
 
-      <View style={styles.globo}>
+      {/* El globo queda fuera de la lista para que arrastrar y hacer zoom no mueva el scroll */}
+      <View style={[styles.globo, { height: Math.round(height * 0.42) }]}>
         <GlobeWebView
           ref={globoRef}
           onPaisTocado={manejarPaisTocado}
@@ -171,10 +180,11 @@ export default function HomeScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {cabecera}
       <FlatList
+        style={styles.flex}
         data={publicaciones}
         keyExtractor={(p) => String(p.publicacionId)}
-        ListHeaderComponent={cabecera}
         contentContainerStyle={styles.lista}
         ListEmptyComponent={
           cargando ? <LoadingSpinner pantallaCompleta={false} /> : (
@@ -187,7 +197,7 @@ export default function HomeScreen({ navigation, route }) {
         }
         renderItem={({ item }) => (
           <View style={styles.item}>
-            <TarjetaPublicacion publicacion={item}
+            <TarjetaPublicacionCompacta publicacion={item} codigoIso={isoDe(item)}
               onPress={() => navigation.navigate('DetallePublicacion', { id: item.publicacionId })} />
           </View>
         )}
@@ -206,12 +216,14 @@ function Chip({ texto, activo, onPress }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.fondo },
+  flex: { flex: 1 },
+  fijo: { flexShrink: 0 },
   lista: { paddingBottom: 24 },
   margenLateral: { marginHorizontal: 20 },
-  encabezado: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12 },
+  encabezado: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 10 },
   marca: { color: colors.primario, fontSize: 22, fontWeight: '900' },
   enlace: { color: colors.primario, fontWeight: '600' },
-  globo: { height: 320, marginHorizontal: 20, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: colors.borde },
+  globo: { marginHorizontal: 20, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: colors.borde },
   tocado: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     marginHorizontal: 20, marginTop: 10, padding: 12,
@@ -222,7 +234,7 @@ const styles = StyleSheet.create({
   tocadoAyuda: { color: colors.textoSecundario, fontSize: 12, marginTop: 2 },
   boton: { backgroundColor: colors.primario, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10 },
   botonTexto: { color: colors.fondo, fontWeight: '800', fontSize: 13 },
-  filtros: { paddingHorizontal: 20, marginTop: 12 },
+  filtros: { paddingHorizontal: 20, marginTop: 10 },
   paisSeleccionado: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   paisNombre: { color: colors.texto, fontSize: 18, fontWeight: '800' },
   chips: { marginBottom: 8 },
@@ -231,7 +243,7 @@ const styles = StyleSheet.create({
   chipTexto: { color: colors.texto, fontSize: 13 },
   chipTextoActivo: { color: colors.fondo, fontWeight: '700' },
   sinCiudades: { color: colors.textoSecundario, alignSelf: 'center', fontSize: 13, marginLeft: 6 },
-  tituloLista: { color: colors.texto, fontSize: 17, fontWeight: '700', paddingHorizontal: 20, marginTop: 8, marginBottom: 12 },
+  tituloLista: { color: colors.texto, fontSize: 15, fontWeight: '700', paddingHorizontal: 20, marginTop: 4, marginBottom: 8 },
   item: { paddingHorizontal: 20 },
   vacio: { color: colors.textoSecundario, textAlign: 'center', padding: 30 },
 });

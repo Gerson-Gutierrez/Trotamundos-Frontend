@@ -18,6 +18,8 @@ const GEOJSON_URL =
  * lugar se proyecta el clic sobre el elipsoide para obtener lat/lon y se resuelve
  * el país con un punto-en-polígono sobre el GeoJSON crudo: instantáneo y confiable.
  *
+ * Los nombres de los países se dibujan sobre el globo (más detalle al acercarse).
+ *
  * Mensajes globo -> app:
  *   { type: 'listo' }                          fronteras cargadas
  *   { type: 'pais', iso, nombre }              un toque: mostrar el nombre
@@ -259,6 +261,70 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
     }
   }
 
+  // ---------- Nombres de los países ----------
+  // Los países importantes (LABELRANK bajo) se ven desde lejos; los chicos aparecen al acercarse.
+  var nombres = new Cesium.LabelCollection();
+  viewer.scene.primitives.add(nombres);
+  var etiquetasPaises = []; // { label, normal }
+
+  function distanciaMaximaPorRango(rango) {
+    if (rango <= 2) return Number.POSITIVE_INFINITY;
+    if (rango === 3) return 18000000;
+    if (rango === 4) return 10000000;
+    if (rango === 5) return 6000000;
+    return 3500000;
+  }
+
+  function dibujarNombres() {
+    for (var i = 0; i < paises.length; i++) {
+      var p = paises[i];
+      if (!p.nombre || p.etiquetaLon == null) continue;
+      var pos = Cesium.Cartesian3.fromDegrees(p.etiquetaLon, p.etiquetaLat, 30000);
+      var label = nombres.add({
+        position: pos,
+        text: p.nombre,
+        font: '600 13px system-ui, sans-serif',
+        fillColor: Cesium.Color.WHITE,
+        outlineColor: Cesium.Color.BLACK,
+        outlineWidth: 3,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+        verticalOrigin: Cesium.VerticalOrigin.CENTER,
+        scaleByDistance: new Cesium.NearFarScalar(1500000, 1.1, 30000000, 0.75),
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, distanciaMaximaPorRango(p.rango)),
+      });
+      etiquetasPaises.push({ label: label, normal: Cesium.Cartesian3.normalize(pos, new Cesium.Cartesian3()) });
+    }
+  }
+
+  // Oculta los nombres del lado de atrás del globo (las etiquetas no se tapan solas con la Tierra)
+  var direccionCamara = new Cesium.Cartesian3();
+  viewer.scene.preRender.addEventListener(function () {
+    if (!etiquetasPaises.length) return;
+    var cam = viewer.camera.positionWC;
+    var distancia = Cesium.Cartesian3.magnitude(cam);
+    Cesium.Cartesian3.normalize(cam, direccionCamara);
+    // Coseno del ángulo hasta el horizonte visto desde la cámara, con un pequeño margen
+    var horizonte = Cesium.Ellipsoid.WGS84.maximumRadius / distancia + 0.03;
+    for (var i = 0; i < etiquetasPaises.length; i++) {
+      var e = etiquetasPaises[i];
+      e.label.show = Cesium.Cartesian3.dot(e.normal, direccionCamara) > horizonte;
+    }
+  });
+
+  // Centroide del polígono más grande: posición de respaldo si el GeoJSON no trae LABEL_X/LABEL_Y
+  function centroDe(poligonos) {
+    var mayor = null, mayorArea = -1;
+    for (var a = 0; a < poligonos.length; a++) {
+      var area = areaDe([poligonos[a]]);
+      if (area > mayorArea) { mayorArea = area; mayor = poligonos[a][0]; }
+    }
+    if (!mayor || !mayor.length) return null;
+    var sx = 0, sy = 0;
+    for (var i = 0; i < mayor.length; i++) { sx += mayor[i][0]; sy += mayor[i][1]; }
+    return [sx / mayor.length, sy / mayor.length];
+  }
+
   // ---------- Resaltado del país elegido ----------
   var resaltado = null;
   function resaltar(pais) {
@@ -391,13 +457,18 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
         if (!polys || !polys.length) return;
         var codigo = isoDe(props);
         if (!codigo) return;
+        var tieneEtiqueta = typeof props.LABEL_X === 'number' && typeof props.LABEL_Y === 'number';
+        var centro = tieneEtiqueta ? [props.LABEL_X, props.LABEL_Y] : centroDe(polys);
         paises.push({
           iso: codigo, nombre: nombreDe(props), poligonos: polys,
           bbox: bboxDe(polys), area: areaDe(polys),
+          etiquetaLon: centro ? centro[0] : null, etiquetaLat: centro ? centro[1] : null,
+          rango: typeof props.LABELRANK === 'number' ? props.LABELRANK : 6,
         });
       });
 
       dibujarFronteras();
+      dibujarNombres();
       estado.style.display = 'none';
       viewer.scene.requestRender();
       enviar({ type: 'listo', cantidadPaises: paises.length });

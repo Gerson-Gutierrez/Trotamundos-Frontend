@@ -13,6 +13,19 @@ export function formatearFecha(iso) {
   return fecha.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+// Fecha numérica corta: 7/10/26
+export function formatearFechaCorta(iso) {
+  if (!iso) return '';
+  const f = new Date(iso);
+  if (Number.isNaN(f.getTime())) return '';
+  return `${f.getDate()}/${f.getMonth() + 1}/${String(f.getFullYear()).slice(-2)}`;
+}
+
+// Imagen de la bandera a partir del código ISO alfa-2 (los emojis de bandera no se ven en todas las plataformas)
+export function urlBandera(codigoIso) {
+  return codigoIso ? `https://flagcdn.com/w40/${String(codigoIso).toLowerCase()}.png` : null;
+}
+
 const HORAS_RETENCION = 24;
 
 // Texto con el tiempo que falta para que un reporte resuelto / alerta leída se elimine solo.
