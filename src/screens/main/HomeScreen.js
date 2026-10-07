@@ -101,28 +101,26 @@ export default function HomeScreen({ navigation, route }) {
 
       <Mensaje texto={errorGlobo} tipo="info" style={styles.margenLateral} />
 
-      {/* Con un país elegido aparece al lado el desplegable de sus ciudades */}
+      {/* Sin país: desplegable de países. Con un país elegido: solo el de sus ciudades
+          (para cambiar de país se usa el globo o el botón Inicio del menú) */}
       <View style={styles.filtros}>
-        <View style={styles.filtro}>
+        {pais ? (
+          <SelectorCiudad
+            etiqueta={null}
+            paisId={pais.paisId}
+            paisNombre={pais.nombre}
+            valor={ciudad}
+            onSeleccion={setCiudad}
+            placeholder="Todas las ciudades"
+            soloConPublicaciones
+          />
+        ) : (
           <SelectorPais
             etiqueta={null}
             valor={pais}
             onSeleccion={(p) => aplicarFiltro(p, { volarEnGlobo: true })}
             placeholder="Buscar país…"
           />
-        </View>
-        {pais && (
-          <View style={styles.filtro}>
-            <SelectorCiudad
-              etiqueta={null}
-              paisId={pais.paisId}
-              paisNombre={pais.nombre}
-              valor={ciudad}
-              onSeleccion={setCiudad}
-              placeholder="Todas las ciudades"
-              soloConPublicaciones
-            />
-          </View>
         )}
       </View>
 
@@ -168,8 +166,7 @@ const styles = StyleSheet.create({
   lista: { paddingBottom: 24 },
   margenLateral: { marginHorizontal: 20 },
   globo: { marginHorizontal: 12, marginTop: 8, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: colors.borde },
-  filtros: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, marginTop: 10 },
-  filtro: { flex: 1, minWidth: 0 },
+  filtros: { paddingHorizontal: 20, marginTop: 10 },
   tituloLista: { color: colors.texto, fontSize: 15, fontWeight: '700', paddingHorizontal: 20, marginTop: 4, marginBottom: 8 },
   item: { paddingHorizontal: 20 },
   vacio: { color: colors.textoSecundario, textAlign: 'center', padding: 30 },
