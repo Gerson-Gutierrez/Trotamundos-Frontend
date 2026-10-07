@@ -44,8 +44,8 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
 <script src="${CESIUM_BASE}/Cesium.js"></script>
 <link href="${CESIUM_BASE}/Widgets/widgets.css" rel="stylesheet">
 <style>
-  html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #05031a; }
-  /* El globo se dibuja con fondo transparente sobre una galaxia pintada en este canvas */
+  html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; }
+  /* El globo se dibuja con fondo transparente sobre el cielo estrellado pintado en este canvas */
   #espacio, #halo { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   #globo { position: absolute; inset: 0; background: transparent; }
   #creditos { display: none; }
@@ -54,6 +54,10 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
     font: 13px system-ui, sans-serif; color: ${colors.textoSecundario}; pointer-events: none;
   }
   .cesium-viewer-bottom { display: none !important; }
+  #atribucion {
+    position: absolute; right: 6px; bottom: 4px; pointer-events: none;
+    font: 9px system-ui, sans-serif; color: rgba(255,255,255,0.45);
+  }
 </style>
 </head>
 <body>
@@ -62,12 +66,15 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
 <div id="globo"></div>
 <div id="creditos"></div>
 <div id="estado">Cargando globo…</div>
+<div id="atribucion"></div>
 <script>
 (function () {
   var TOKEN = ${JSON.stringify(CESIUM_ION_TOKEN)};
   var ISO_INICIAL = ${JSON.stringify(isoInicial)};
   var GEOJSON = ${JSON.stringify(GEOJSON_URL)};
-  var COLOR_BORDE = Cesium.Color.fromCssColorString('${colors.primario}').withAlpha(0.55);
+  var IMAGENES_ESRI = 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer';
+  // Fronteras finas grisáceas, como en un atlas satelital
+  var COLOR_BORDE = Cesium.Color.WHITE.withAlpha(0.5);
   var COLOR_SELECCION = Cesium.Color.fromCssColorString('${colors.primario}');
   var estado = document.getElementById('estado');
 
@@ -77,57 +84,31 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
     else if (window.parent && window.parent !== window) window.parent.postMessage(s, '*');
   }
 
-  // ---------- Galaxia de fondo ----------
-  // Nebulosas de colores + estrellas, pintadas una vez en un canvas detrás del globo.
-  function pintarGalaxia() {
+  // ---------- Cielo de fondo ----------
+  // Espacio negro con estrellas tenues, pintado una vez en un canvas detrás del globo.
+  function pintarCielo() {
     var lienzo = document.getElementById('espacio');
     var escala = window.devicePixelRatio || 1;
     var w = window.innerWidth, h = window.innerHeight;
     lienzo.width = w * escala; lienzo.height = h * escala;
     var ctx = lienzo.getContext('2d');
     ctx.scale(escala, escala);
-
-    var fondo = ctx.createLinearGradient(0, 0, w, h);
-    fondo.addColorStop(0, '#0a0430');
-    fondo.addColorStop(0.5, '#05031a');
-    fondo.addColorStop(1, '#140326');
-    ctx.fillStyle = fondo;
+    ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, w, h);
 
-    var nebulosas = [
-      [0.15, 0.2, 0.55, 'rgba(155, 48, 255, 0.55)'],
-      [0.85, 0.15, 0.45, 'rgba(255, 46, 160, 0.45)'],
-      [0.8, 0.85, 0.6, 'rgba(0, 190, 255, 0.45)'],
-      [0.2, 0.9, 0.5, 'rgba(255, 120, 40, 0.35)'],
-      [0.5, 0.5, 0.35, 'rgba(60, 90, 255, 0.35)'],
-    ];
-    ctx.globalCompositeOperation = 'lighter';
-    nebulosas.forEach(function (n) {
-      var r = Math.max(w, h) * n[2];
-      var g = ctx.createRadialGradient(w * n[0], h * n[1], 0, w * n[0], h * n[1], r);
-      g.addColorStop(0, n[3]);
-      g.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, w, h);
-    });
-
-    var tonos = ['#ffffff', '#ffffff', '#cfe8ff', '#ffd6f5', '#fff3b0', '#b0fff5'];
-    var cantidad = Math.round((w * h) / 900);
+    var cantidad = Math.round((w * h) / 2200);
     for (var i = 0; i < cantidad; i++) {
-      var x = Math.random() * w, y = Math.random() * h;
-      var radio = Math.random() < 0.06 ? 1.2 + Math.random() * 1.3 : 0.3 + Math.random() * 0.8;
-      ctx.globalAlpha = 0.5 + Math.random() * 0.5;
-      ctx.fillStyle = tonos[(Math.random() * tonos.length) | 0];
-      if (radio > 1.2) { ctx.shadowBlur = 6; ctx.shadowColor = ctx.fillStyle; } else { ctx.shadowBlur = 0; }
+      var grande = Math.random() < 0.04;
+      ctx.globalAlpha = grande ? 0.6 + Math.random() * 0.4 : 0.15 + Math.random() * 0.45;
+      ctx.fillStyle = Math.random() < 0.15 ? '#cfe0ff' : '#ffffff';
       ctx.beginPath();
-      ctx.arc(x, y, radio, 0, Math.PI * 2);
+      ctx.arc(Math.random() * w, Math.random() * h, grande ? 0.9 + Math.random() * 0.6 : 0.3 + Math.random() * 0.5, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = 'source-over';
   }
-  pintarGalaxia();
-  window.addEventListener('resize', pintarGalaxia);
+  pintarCielo();
+  window.addEventListener('resize', pintarCielo);
 
   // ---------- Viewer ----------
   var viewer;
@@ -141,10 +122,11 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
       skyBox: false, contextOptions: { webgl: { alpha: true } },
     };
     if (!TOKEN) {
-      // Sin Cesium Ion: imagen Natural Earth II incluida en el build de Cesium (no requiere token)
+      // Sin Cesium Ion: imagen satelital de Esri World Imagery (no requiere token, exige atribución)
       opciones.baseLayer = Cesium.ImageryLayer.fromProviderAsync(
-        Cesium.TileMapServiceImageryProvider.fromUrl(Cesium.buildModuleUrl('Assets/Textures/NaturalEarthII'))
+        Cesium.ArcGisMapServerImageryProvider.fromUrl(IMAGENES_ESRI)
       );
+      document.getElementById('atribucion').textContent = 'Imágenes © Esri, Maxar, Earthstar Geographics';
     }
     viewer = new Cesium.Viewer('globo', opciones);
     window.__viewer = viewer;
@@ -159,14 +141,14 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
   if (escena.sun) escena.sun.show = false;
   if (escena.moon) escena.moon.show = false;
   escena.globe.enableLighting = false;
-  escena.globe.baseColor = Cesium.Color.fromCssColorString('#1565c0');
+  escena.globe.baseColor = Cesium.Color.fromCssColorString('#0b2a4a');
 
-  // Colores vivos en la imagen satelital
+  // Un poco más de vida a la imagen satelital, sin perder el aspecto natural
   var capaBase = viewer.imageryLayers.get(0);
   if (capaBase) {
-    capaBase.saturation = 1.8;
-    capaBase.contrast = 1.25;
-    capaBase.brightness = 1.15;
+    capaBase.saturation = 1.15;
+    capaBase.contrast = 1.08;
+    capaBase.brightness = 1.05;
   }
 
   // La atmósfera de Cesium no se ve sobre un fondo transparente (y la del suelo vuelve
@@ -205,21 +187,75 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
     ctxHalo.clearRect(0, 0, w, h);
     if (!clave) return;
 
-    var exterior = radio * 1.16;
-    var g = ctxHalo.createRadialGradient(centro.x, centro.y, radio * 0.96, centro.x, centro.y, exterior);
-    g.addColorStop(0, 'rgba(190, 240, 255, 0.95)');
-    g.addColorStop(0.18, 'rgba(90, 200, 255, 0.75)');
-    g.addColorStop(0.5, 'rgba(60, 120, 255, 0.35)');
-    g.addColorStop(1, 'rgba(120, 60, 255, 0)');
+    // Borde fino: blanco azulado pegado al globo que se desvanece en azul
+    var exterior = radio * 1.045;
+    var g = ctxHalo.createRadialGradient(centro.x, centro.y, radio * 0.99, centro.x, centro.y, exterior);
+    g.addColorStop(0, 'rgba(225, 240, 255, 1)');
+    g.addColorStop(0.25, 'rgba(110, 170, 255, 0.95)');
+    g.addColorStop(0.6, 'rgba(40, 100, 230, 0.45)');
+    g.addColorStop(1, 'rgba(20, 60, 200, 0)');
+    // Disco negro detrás del globo: la imagen satelital tiene algo de transparencia
+    // y no debe dejar ver ni las estrellas ni el halo a través de la Tierra.
+    ctxHalo.fillStyle = '#000';
+    ctxHalo.beginPath();
+    ctxHalo.arc(centro.x, centro.y, radio * 0.995, 0, Math.PI * 2);
+    ctxHalo.fill();
+    // Solo el anillo exterior
     ctxHalo.fillStyle = g;
     ctxHalo.beginPath();
     ctxHalo.arc(centro.x, centro.y, exterior, 0, Math.PI * 2);
-    ctxHalo.fill();
+    ctxHalo.arc(centro.x, centro.y, radio * 0.99, 0, Math.PI * 2, true);
+    ctxHalo.fill('evenodd');
   }
   escena.postRender.addEventListener(dibujarHalo);
-  viewer.scene.screenSpaceCameraController.minimumZoomDistance = 400000;
-  viewer.scene.screenSpaceCameraController.maximumZoomDistance = 40000000;
-  viewer.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(-60, -10, 25000000) });
+  // ---------- Cámara ----------
+  // El globo arranca centrado y ocupando el recuadro; no se puede alejar más que eso
+  // (si no, queda chiquito y se "desparrama"). Acercar se permite hasta ver un país.
+  var R_TIERRA = Cesium.Ellipsoid.WGS84.maximumRadius;
+  var ALTURA_MINIMA = 2000000; // alcanza para ver un país mediano entero
+  var controlador = escena.screenSpaceCameraController;
+  controlador.enableTilt = false;
+  controlador.enableLook = false;
+  controlador.enableTranslate = false;
+  controlador.minimumZoomDistance = ALTURA_MINIMA;
+
+  // Altura a la que el globo entra justo en el recuadro (con un pequeño margen para el borde)
+  function alturaGloboCompleto() {
+    var w = Math.max(1, window.innerWidth), h = Math.max(1, window.innerHeight);
+    var tanMedio = Math.tan(viewer.camera.frustum.fovy / 2);
+    var t = (0.46 * Math.min(w, h) * 2 / h) * tanMedio; // tan del radio angular buscado
+    return R_TIERRA / Math.sin(Math.atan(t)) - R_TIERRA;
+  }
+  var alturaMaxima = alturaGloboCompleto();
+
+  function ajustarLimites() {
+    alturaMaxima = alturaGloboCompleto();
+    controlador.maximumZoomDistance = alturaMaxima;
+    var carto = viewer.camera.positionCartographic;
+    if (carto.height > alturaMaxima) {
+      viewer.camera.setView({ destination: Cesium.Cartesian3.fromRadians(carto.longitude, carto.latitude, alturaMaxima) });
+    }
+  }
+  viewer.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(-60, -15, alturaMaxima) });
+  ajustarLimites();
+  window.addEventListener('resize', ajustarLimites);
+
+  // El zoom de Cesium apunta al cursor y desplaza el globo: se reorienta la cámara
+  // siempre hacia el centro de la Tierra para que quede centrado.
+  var haciaCentro = new Cesium.Cartesian3(), arriba = new Cesium.Cartesian3(), proyeccion = new Cesium.Cartesian3();
+  escena.preRender.addEventListener(function () {
+    var cam = viewer.camera;
+    Cesium.Cartesian3.normalize(Cesium.Cartesian3.negate(cam.positionWC, haciaCentro), haciaCentro);
+    if (Cesium.Cartesian3.dot(haciaCentro, cam.directionWC) > 0.999999) return;
+    // "Arriba" actual sin la componente en la nueva dirección
+    Cesium.Cartesian3.multiplyByScalar(haciaCentro, Cesium.Cartesian3.dot(cam.up, haciaCentro), proyeccion);
+    Cesium.Cartesian3.subtract(cam.up, proyeccion, arriba);
+    if (Cesium.Cartesian3.magnitude(arriba) < 1e-6) return;
+    Cesium.Cartesian3.normalize(arriba, arriba);
+    Cesium.Cartesian3.clone(haciaCentro, cam.direction);
+    Cesium.Cartesian3.clone(arriba, cam.up);
+    Cesium.Cartesian3.cross(cam.direction, cam.up, cam.right);
+  });
 
   // ---------- Datos de países ----------
   var paises = [];   // { iso, nombre, poligonos: [[anilloExterior, ...huecos]], bbox }
@@ -363,18 +399,20 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
   }
 
   // ---------- Nombres de los países ----------
-  // Con el globo entero a la vista no hay nombres; van apareciendo al acercarse,
-  // primero los países importantes (LABELRANK bajo) y después los chicos.
+  // Los países importantes (LABELRANK bajo) se ven desde el inicio; los demás aparecen al acercarse.
   var nombres = new Cesium.LabelCollection();
   viewer.scene.primitives.add(nombres);
   var etiquetasPaises = []; // { label, normal }
 
+  // Umbrales relativos a la vista inicial: al arrancar se ven los países grandes del frente
+  // y al acercarse van apareciendo los demás.
   function distanciaMaximaPorRango(rango) {
-    if (rango <= 2) return 15000000;
-    if (rango === 3) return 9000000;
-    if (rango === 4) return 6000000;
-    if (rango === 5) return 4000000;
-    return 2500000;
+    var h0 = alturaMaxima;
+    if (rango <= 2) return h0 * 1.6;
+    if (rango === 3) return h0 * 1.12;
+    if (rango === 4) return h0 * 0.6;
+    if (rango === 5) return h0 * 0.45;
+    return h0 * 0.32;
   }
 
   function dibujarNombres() {
@@ -384,14 +422,13 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
       var pos = Cesium.Cartesian3.fromDegrees(p.etiquetaLon, p.etiquetaLat, 30000);
       var label = nombres.add({
         position: pos,
-        text: p.nombre,
-        font: '700 12px system-ui, sans-serif',
-        // Cartel beige sin borde con letras oscuras
-        fillColor: Cesium.Color.fromCssColorString('#3b2a12'),
-        style: Cesium.LabelStyle.FILL,
-        showBackground: true,
-        backgroundColor: Cesium.Color.fromCssColorString('#f6e7b4').withAlpha(0.93),
-        backgroundPadding: new Cesium.Cartesian2(7, 4),
+        text: p.nombre.toUpperCase(),
+        // Letras blancas en mayúscula con contorno oscuro, legibles sobre la imagen satelital
+        font: '800 12px system-ui, sans-serif',
+        fillColor: Cesium.Color.WHITE,
+        outlineColor: Cesium.Color.fromCssColorString('#111').withAlpha(0.9),
+        outlineWidth: 3,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: Cesium.VerticalOrigin.CENTER,
         scaleByDistance: new Cesium.NearFarScalar(1500000, 1.1, 30000000, 0.75),
@@ -444,12 +481,15 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
     viewer.scene.requestRender();
   }
 
+  // Vuela sobre el país a una altura acorde a su tamaño, dentro de los límites de zoom
   function volarA(pais) {
     var b = pais.bbox;
-    viewer.camera.flyTo({
-      destination: Cesium.Rectangle.fromDegrees(b[0], b[1], b[2], b[3]),
-      duration: 1.2,
-    });
+    var ancho = Math.min(b[2] - b[0], 120) * Math.cos(((b[1] + b[3]) / 2) * Math.PI / 180);
+    var extension = Math.max(ancho, b[3] - b[1]);
+    var altura = Math.min(alturaMaxima, Math.max(ALTURA_MINIMA, extension * 111000 * 1.4));
+    var lon = pais.etiquetaLon != null ? pais.etiquetaLon : (b[0] + b[2]) / 2;
+    var lat = pais.etiquetaLat != null ? pais.etiquetaLat : (b[1] + b[3]) / 2;
+    viewer.camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(lon, lat, altura), duration: 1.2 });
   }
 
   // ---------- Interacción ----------

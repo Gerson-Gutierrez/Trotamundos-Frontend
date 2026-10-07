@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import GlobeWebView from '../../components/globe/GlobeWebView';
 import TarjetaPublicacionCompacta from '../../components/publicacion/TarjetaPublicacionCompacta';
 import SelectorPais from '../../components/common/SelectorPais';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
 import Mensaje from '../../components/common/Mensaje';
 import { colors } from '../../constants/colors';
 import { mapasApi } from '../../api/mapasApi';
@@ -119,9 +118,7 @@ export default function HomeScreen({ navigation, route }) {
         {/* Actualiza el feed (sin pull-to-refresh, que estorbaba al usar el globo) */}
         <Pressable style={styles.actualizar} onPress={recargar} disabled={refrescando} hitSlop={8}
           accessibilityLabel="Actualizar publicaciones">
-          {refrescando
-            ? <ActivityIndicator size="small" color={colors.primario} />
-            : <Ionicons name="refresh" size={20} color={colors.texto} />}
+          <Ionicons name="refresh" size={20} color={colors.texto} />
         </Pressable>
       </View>
 
@@ -188,7 +185,7 @@ export default function HomeScreen({ navigation, route }) {
         keyExtractor={(p) => String(p.publicacionId)}
         contentContainerStyle={styles.lista}
         ListEmptyComponent={
-          cargando ? <LoadingSpinner pantallaCompleta={false} /> : (
+          cargando ? null : (
             <Text style={styles.vacio}>
               {pais
                 ? `Todavía nadie publicó sobre ${ciudad ? ciudad.nombre : pais.nombre}. ¡Podés ser el primero!`
