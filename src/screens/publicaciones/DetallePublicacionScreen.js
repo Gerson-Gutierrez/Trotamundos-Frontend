@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Pantalla from '../../components/common/Pantalla';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
@@ -108,8 +108,8 @@ function ModalReporte({ visible, publicacionId, onCerrar }) {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onCerrar}>
-      <View style={styles.fondoModal}>
-        <View style={styles.modal}>
+      <KeyboardAvoidingView style={styles.fondoModal} behavior="padding">
+        <ScrollView style={styles.modalScroll} contentContainerStyle={styles.modal} keyboardShouldPersistTaps="handled" bounces={false}>
           <Text style={styles.modalTitulo}>Denunciar publicación</Text>
           <Mensaje texto={error} />
           <View style={styles.motivos}>
@@ -123,8 +123,8 @@ function ModalReporte({ visible, publicacionId, onCerrar }) {
             placeholder="Contanos qué problema tiene esta publicación" />
           <Button titulo="Enviar denuncia" onPress={enviar} cargando={cargando} />
           <Button titulo="Cancelar" variant="texto" onPress={onCerrar} />
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -139,7 +139,8 @@ const styles = StyleSheet.create({
   fecha: { color: colors.textoSecundario, fontSize: 12 },
   acciones: { gap: 10, marginTop: 10 },
   fondoModal: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  modal: { backgroundColor: colors.superficie, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 36 },
+  modalScroll: { flexGrow: 0, maxHeight: '90%', backgroundColor: colors.superficie, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  modal: { padding: 20, paddingBottom: 36 },
   modalTitulo: { color: colors.texto, fontSize: 18, fontWeight: '800', marginBottom: 14 },
   motivos: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   motivo: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: colors.borde },

@@ -92,13 +92,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 4,
+    gap: 8,
   },
   textoDireccion: {
-    marginRight: 6,
+    flex: 1,
+    marginBottom: 0,
   },
   iconoBoton: {
     width: 32,
     height: 32,
+    flexShrink: 0,
     borderRadius: 16,
     backgroundColor: '#1f2937',
     alignItems: 'center',

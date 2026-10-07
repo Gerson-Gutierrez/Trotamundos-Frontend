@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, StyleSheet, Text, View } from 'react-native';
 import Button from './Button';
 import Input from './Input';
 import Mensaje from './Mensaje';
@@ -36,7 +36,7 @@ export default function ModalEliminarCuenta({ visible, onCerrar, onEliminada }) 
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={cerrar}>
-      <KeyboardAvoidingView style={styles.fondo} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.fondo} behavior="padding">
         <View style={styles.caja}>
           <Text style={styles.titulo}>Eliminar mi cuenta</Text>
           <Text style={styles.texto}>

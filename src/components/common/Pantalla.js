@@ -1,5 +1,5 @@
 import React from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../constants/colors';
 
@@ -8,7 +8,7 @@ export default function Pantalla({ children, scroll = true, style, contenidoStyl
   const Contenido = scroll ? ScrollView : View;
   return (
     <SafeAreaView style={styles.safe} edges={bordes}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior="padding">
         <Contenido
           style={[styles.flex, style]}
           contentContainerStyle={scroll ? [styles.contenido, contenidoStyle] : undefined}
@@ -24,5 +24,5 @@ export default function Pantalla({ children, scroll = true, style, contenidoStyl
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.fondo },
   flex: { flex: 1 },
-  contenido: { padding: 20, paddingBottom: 40, width: '100%', maxWidth: 720, alignSelf: 'center' },
+  contenido: { padding: 20, paddingBottom: 60, width: '100%', maxWidth: 720, alignSelf: 'center' },
 });

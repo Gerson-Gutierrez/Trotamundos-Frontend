@@ -1,8 +1,11 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View } from 'react-native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../hooks/useAuth';
+import BarraMenu from '../components/common/BarraMenu';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { colors } from '../constants/colors';
 import { opcionesHeader, temaNavegacion } from './tema';
 import AuthStack from './AuthStack';
 import MainTabNavigator from './MainTabNavigator';
@@ -13,6 +16,7 @@ import EditarPerfilScreen from '../screens/main/EditarPerfilScreen';
 import GlobeViewScreen from '../screens/main/GlobeViewScreen';
 
 const Root = createNativeStackNavigator();
+const navegacion = createNavigationContainerRef();
 
 // Deep link del correo de invitación: /admin/register?token=XYZ (en web) o trotamundos://admin/register?token=XYZ
 const linking = {
@@ -22,12 +26,20 @@ const linking = {
 
 // Enrutador raíz: decide entre el flujo de autenticación y la app.
 export default function AppNavigator() {
-  const { autenticado, esSuperAdmin, cargandoSesion } = useAuth();
+  const { autenticado, esAdmin, esSuperAdmin, cargandoSesion } = useAuth();
+  const [rutaActual, setRutaActual] = useState(null);
 
   if (cargandoSesion) return <LoadingSpinner mensaje="Cargando sesión…" />;
 
   return (
-    <NavigationContainer theme={temaNavegacion} linking={linking}>
+    <View style={{ flex: 1, backgroundColor: colors.fondo }}>
+    <NavigationContainer
+      ref={navegacion}
+      theme={temaNavegacion}
+      linking={linking}
+      onReady={() => setRutaActual(navegacion.getCurrentRoute()?.name ?? null)}
+      onStateChange={() => setRutaActual(navegacion.getCurrentRoute()?.name ?? null)}
+    >
       {!autenticado ? (
         <AuthStack />
       ) : esSuperAdmin ? (
@@ -41,16 +53,20 @@ export default function AppNavigator() {
             component={DetallePublicacionScreen}
             options={{ title: 'Publicación' }}
           />
-          {/* El wizard se abre sobre las tabs para que el flujo sea lineal */}
+          {/* El wizard no es modal para que el menú inferior siga visible */}
           <Root.Screen
             name="Wizard"
             component={PublicacionStack}
-            options={{ headerShown: false, presentation: 'fullScreenModal' }}
+            options={{ headerShown: false }}
           />
           <Root.Screen name="EditarPerfil" component={EditarPerfilScreen} options={{ title: 'Editar perfil' }} />
           <Root.Screen name="GlobeView" component={GlobeViewScreen} options={{ title: 'Elegí un país' }} />
         </Root.Navigator>
       )}
     </NavigationContainer>
+    {autenticado && (
+      <BarraMenu navegacion={navegacion} rutaActual={rutaActual} esAdmin={esAdmin} esSuperAdmin={esSuperAdmin} />
+    )}
+    </View>
   );
 }
