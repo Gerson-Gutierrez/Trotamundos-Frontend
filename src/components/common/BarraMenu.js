@@ -7,7 +7,8 @@ import { colors } from '../../constants/colors';
 // Rutas (en cualquier nivel de anidación) que pertenecen a cada opción del menú.
 const OPCIONES_VIAJERO = [
   { clave: 'Inicio', etiqueta: 'Inicio', icono: ['home', 'home-outline'], rutas: ['Inicio', 'GlobeView'],
-    ir: (nav) => nav.navigate('MainTabs', { screen: 'Inicio' }) },
+    // Siempre vuelve al feed completo: quita los filtros y recarga las publicaciones
+    ir: (nav) => nav.navigate('MainTabs', { screen: 'Inicio', params: { reiniciar: Date.now() } }) },
   { clave: 'Publicar', etiqueta: 'Publicar', icono: ['add-circle', 'add-circle-outline'],
     rutas: ['WizardCiudad', 'WizardAlojamiento', 'WizardGastronomia', 'WizardRecomendaciones', 'WizardFotos', 'WizardConfirmar'],
     ir: (nav) => nav.navigate('Wizard') },

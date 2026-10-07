@@ -22,7 +22,7 @@ export default function SelectorPais({ etiqueta = 'País', valor, onSeleccion, p
     <View style={styles.contenedor}>
       {etiqueta ? <Text style={styles.etiqueta}>{etiqueta}</Text> : null}
       <Pressable style={styles.campo} onPress={() => setAbierto(true)}>
-        <Text style={[styles.valor, !valor && styles.placeholder]}>
+        <Text style={[styles.valor, !valor && styles.placeholder]} numberOfLines={1}>
           {valor ? `${valor.nombre}${valor.codigoIso ? ` (${valor.codigoIso})` : ''}` : placeholder}
         </Text>
         <Text style={styles.flecha}>▾</Text>
@@ -138,7 +138,7 @@ export default function SelectorPais({
     <View style={styles.contenedor}>
       {etiqueta ? <Text style={styles.etiqueta}>{etiqueta}</Text> : null}
       <Pressable style={styles.campo} onPress={() => setAbierto(true)}>
-        <Text style={[styles.valor, !valor && styles.placeholder]}>
+        <Text style={[styles.valor, !valor && styles.placeholder]} numberOfLines={1}>
           {valor ? `${valor.nombre}${valor.codigoIso ? ` (${valor.codigoIso})` : ''}` : placeholder}
         </Text>
         <Text style={styles.flecha}>▾</Text>

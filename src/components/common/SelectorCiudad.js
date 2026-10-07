@@ -7,13 +7,19 @@ import { mapasApi } from '../../api/mapasApi';
 const ESPERA_MS = 300; // debounce del buscador
 const LIMITE = 120;
 
+// El buscador solo admite texto: letras (con acentos), espacios, apóstrofos y guiones
+const soloTexto = (t) => t.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s'’-]/g, '');
+
 /**
  * Desplegable de ciudades del país elegido, con el mismo estilo que SelectorPais.
  * El backend une las ciudades ya registradas con el catálogo mundial, así que el
  * listado tiene contenido aunque nadie haya publicado todavía en ese país.
  * El filtrado se hace en el servidor porque hay países con miles de ciudades.
  *
- * onSeleccion({ ciudadId?, nombre, registrada })
+ * Con soloConPublicaciones lista únicamente ciudades que ya tienen publicaciones (filtro
+ * del inicio): no se ofrece agregar ciudades nuevas y aparece la opción "Todas las ciudades".
+ *
+ * onSeleccion({ ciudadId?, nombre, registrada }) — o null al elegir "Todas las ciudades"
  */
 export default function SelectorCiudad({
   paisId,
@@ -22,6 +28,7 @@ export default function SelectorCiudad({
   onSeleccion,
   etiqueta = 'Ciudad',
   placeholder = 'Elegí una ciudad',
+  soloConPublicaciones = false,
 }) {
   const [abierto, setAbierto] = useState(false);
   const [texto, setTexto] = useState('');
@@ -44,14 +51,14 @@ export default function SelectorCiudad({
   useEffect(() => {
     if (!paisId) return;
     let activo = true;
-    mapasApi.ciudades(paisId, false, { q: consulta, limite: LIMITE })
+    mapasApi.ciudades(paisId, soloConPublicaciones, { q: consulta, limite: LIMITE })
       .then((lista) => activo && setDatos({ paisId, q: consulta, lista, error: '' }))
       .catch(() => activo && setDatos({
         paisId, q: consulta, lista: [],
         error: 'No se pudieron cargar las ciudades. Igual podés escribir la tuya.',
       }));
     return () => { activo = false; };
-  }, [paisId, consulta]);
+  }, [paisId, consulta, soloConPublicaciones]);
 
   const buscado = texto.trim();
   const yaExiste = ciudades.some((c) => c.nombre.toLowerCase() === buscado.toLowerCase());
@@ -70,7 +77,7 @@ export default function SelectorCiudad({
     <View style={styles.contenedor}>
       {etiqueta ? <Text style={styles.etiqueta}>{etiqueta}</Text> : null}
       <Pressable style={[styles.campo, !paisId && styles.campoInactivo]} onPress={abrir} disabled={!paisId}>
-        <Text style={[styles.valor, !valor && styles.placeholder]}>
+        <Text style={[styles.valor, !valor && styles.placeholder]} numberOfLines={1}>
           {valor?.nombre || (paisId ? placeholder : 'Elegí primero el país')}
         </Text>
         <Text style={styles.flecha}>▾</Text>
@@ -84,7 +91,7 @@ export default function SelectorCiudad({
               placeholder={paisNombre ? `Buscar ciudad en ${paisNombre}…` : 'Buscar ciudad…'}
               placeholderTextColor={colors.textoSecundario}
               value={texto}
-              onChangeText={setTexto}
+              onChangeText={(t) => setTexto(soloTexto(t))}
               autoFocus
             />
             <Pressable onPress={cerrar}>
@@ -105,15 +112,26 @@ export default function SelectorCiudad({
             keyExtractor={(c) => `${c.ciudadId}-${c.nombre}`}
             keyboardShouldPersistTaps="handled"
             ListHeaderComponent={
-              // El catálogo no cubre todas las localidades: se puede agregar a mano
-              buscado && !yaExiste && !cargando ? (
+              // Filtro del inicio: opción para quitar el filtro de ciudad.
+              // Wizard: el catálogo no cubre todas las localidades, se puede agregar a mano.
+              soloConPublicaciones ? (
+                buscado ? null : (
+                  <Pressable style={styles.item} onPress={() => elegir(null)}>
+                    <Text style={[styles.itemTexto, !valor && styles.itemActivo]}>Todas las ciudades</Text>
+                  </Pressable>
+                )
+              ) : buscado && !yaExiste && !cargando ? (
                 <Pressable style={[styles.item, styles.itemNueva]} onPress={() => elegir({ nombre: buscado })}>
                   <Text style={styles.itemNuevaTexto} numberOfLines={1}>➕ Agregar “{buscado}”</Text>
                 </Pressable>
               ) : null
             }
             ListEmptyComponent={
-              cargando ? null : (
+              cargando ? null : soloConPublicaciones ? (
+                <Text style={styles.vacio}>
+                  {buscado ? 'Ninguna ciudad coincide.' : `Todavía no hay publicaciones en ciudades de ${paisNombre || 'este país'}.`}
+                </Text>
+              ) : (
                 <Text style={styles.vacio}>
                   {buscado
                     ? 'Ninguna ciudad coincide. Podés agregarla con el botón de arriba.'
@@ -162,6 +180,7 @@ const styles = StyleSheet.create({
   itemNueva: { backgroundColor: colors.superficie },
   itemNuevaTexto: { color: colors.primario, fontSize: 16, fontWeight: '700', flex: 1 },
   itemTexto: { color: colors.texto, fontSize: 16, flex: 1 },
+  itemActivo: { color: colors.primario, fontWeight: '700' },
   insignia: { color: colors.primario, fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
   vacio: { color: colors.textoSecundario, textAlign: 'center', marginTop: 40, paddingHorizontal: 30, lineHeight: 20 },
 });

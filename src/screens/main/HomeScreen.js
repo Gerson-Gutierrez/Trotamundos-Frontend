@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { FlatList, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
 import GlobeWebView from '../../components/globe/GlobeWebView';
 import TarjetaPublicacionCompacta from '../../components/publicacion/TarjetaPublicacionCompacta';
 import SelectorPais from '../../components/common/SelectorPais';
+import SelectorCiudad from '../../components/common/SelectorCiudad';
 import Mensaje from '../../components/common/Mensaje';
 import { colors } from '../../constants/colors';
 import { mapasApi } from '../../api/mapasApi';
@@ -19,9 +19,15 @@ export default function HomeScreen({ navigation, route }) {
   const { height } = useWindowDimensions();
   // País cuyo filtro está aplicado (doble toque en el globo o elegido en el desplegable)
   const [pais, setPais] = useState(null);
+  const [ciudad, setCiudad] = useState(null); // null = todas las ciudades del país
   const [errorGlobo, setErrorGlobo] = useState('');
+  const [version, setVersion] = useState(0); // cambia para forzar la recarga del feed
 
-  const { publicaciones, cargando, refrescando, error, recargar } = usePublicaciones({ paisId: pais?.paisId });
+  const { publicaciones, cargando, error, recargar } = usePublicaciones({
+    paisId: pais?.paisId,
+    ciudadId: ciudad?.ciudadId,
+    version,
+  });
 
   // Traduce el código ISO que manda el globo a un país del backend
   const resolverPais = useCallback(async (iso, nombre) => {
@@ -39,6 +45,7 @@ export default function HomeScreen({ navigation, route }) {
     if (!nuevo) return;
     setErrorGlobo('');
     setPais(nuevo);
+    setCiudad(null);
     if (volarEnGlobo && nuevo.codigoIso) globoRef.current?.seleccionarPais(nuevo.codigoIso);
   }, []);
 
@@ -48,11 +55,16 @@ export default function HomeScreen({ navigation, route }) {
     if (encontrado) aplicarFiltro(encontrado);
   }, [resolverPais, aplicarFiltro]);
 
-  const limpiar = () => {
+  // Tocar "Inicio" en el menú: feed completo sin filtros, recargado desde el servidor
+  useEffect(() => {
+    if (!route.params?.reiniciar) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPais(null);
+    setCiudad(null);
     setErrorGlobo('');
+    setVersion((v) => v + 1);
     globoRef.current?.limpiarSeleccion();
-  };
+  }, [route.params?.reiniciar]);
 
   // Selección hecha en la pantalla de globo a pantalla completa
   useEffect(() => {
@@ -85,35 +97,37 @@ export default function HomeScreen({ navigation, route }) {
           onPaisConfirmado={manejarPaisConfirmado}
           onError={setErrorGlobo}
         />
-        {/* Actualiza el feed (sin pull-to-refresh, que estorbaba al usar el globo) */}
-        <Pressable style={styles.actualizar} onPress={recargar} disabled={refrescando} hitSlop={8}
-          accessibilityLabel="Actualizar publicaciones">
-          <Ionicons name="refresh" size={20} color={colors.texto} />
-        </Pressable>
       </View>
 
       <Mensaje texto={errorGlobo} tipo="info" style={styles.margenLateral} />
 
+      {/* Con un país elegido aparece al lado el desplegable de sus ciudades */}
       <View style={styles.filtros}>
-        <SelectorPais
-          etiqueta={null}
-          valor={pais}
-          onSeleccion={(p) => aplicarFiltro(p, { volarEnGlobo: true })}
-          placeholder="Buscar país…"
-        />
-
+        <View style={styles.filtro}>
+          <SelectorPais
+            etiqueta={null}
+            valor={pais}
+            onSeleccion={(p) => aplicarFiltro(p, { volarEnGlobo: true })}
+            placeholder="Buscar país…"
+          />
+        </View>
         {pais && (
-          <View style={styles.paisSeleccionado}>
-            <Text style={styles.paisNombre}>{pais.nombre}</Text>
-            <Pressable onPress={limpiar}>
-              <Text style={styles.enlace}>Ver todos</Text>
-            </Pressable>
+          <View style={styles.filtro}>
+            <SelectorCiudad
+              etiqueta={null}
+              paisId={pais.paisId}
+              paisNombre={pais.nombre}
+              valor={ciudad}
+              onSeleccion={setCiudad}
+              placeholder="Todas las ciudades"
+              soloConPublicaciones
+            />
           </View>
         )}
       </View>
 
       <Text style={styles.tituloLista}>
-        {pais ? `Publicaciones en ${pais.nombre}` : 'Últimas publicaciones'}
+        {pais ? `Publicaciones en ${ciudad ? ciudad.nombre : pais.nombre}` : 'Últimas publicaciones'}
       </Text>
       {error && <Mensaje texto={mensajeError(error)} style={styles.margenLateral} />}
     </View>
@@ -131,7 +145,7 @@ export default function HomeScreen({ navigation, route }) {
           cargando ? null : (
             <Text style={styles.vacio}>
               {pais
-                ? `Todavía nadie publicó sobre ${pais.nombre}. ¡Podés ser el primero!`
+                ? `Todavía nadie publicó sobre ${ciudad ? ciudad.nombre : pais.nombre}. ¡Podés ser el primero!`
                 : 'No hay publicaciones todavía. ¡Sé el primero en contar tu viaje!'}
             </Text>
           )
@@ -153,15 +167,9 @@ const styles = StyleSheet.create({
   fijo: { flexShrink: 0 },
   lista: { paddingBottom: 24 },
   margenLateral: { marginHorizontal: 20 },
-  enlace: { color: colors.primario, fontWeight: '600' },
   globo: { marginHorizontal: 12, marginTop: 8, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: colors.borde },
-  actualizar: {
-    position: 'absolute', top: 10, right: 10, width: 38, height: 38, borderRadius: 19,
-    alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(17,24,39,0.75)',
-  },
-  filtros: { paddingHorizontal: 20, marginTop: 10 },
-  paisSeleccionado: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  paisNombre: { color: colors.texto, fontSize: 18, fontWeight: '800' },
+  filtros: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, marginTop: 10 },
+  filtro: { flex: 1, minWidth: 0 },
   tituloLista: { color: colors.texto, fontSize: 15, fontWeight: '700', paddingHorizontal: 20, marginTop: 4, marginBottom: 8 },
   item: { paddingHorizontal: 20 },
   vacio: { color: colors.textoSecundario, textAlign: 'center', padding: 30 },
