@@ -3,7 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../constants/colors';
 import { formatearFechaCorta, urlBandera } from '../../utils/formatters';
 
-// Fila mínima del feed del inicio: bandera, país y fecha. El contenido completo se ve al abrirla.
+// Fila mínima del feed del inicio: bandera, país, ciudad y fecha. El contenido completo se ve al abrirla.
 export default function TarjetaPublicacionCompacta({ publicacion, codigoIso, onPress }) {
   const bandera = urlBandera(codigoIso);
   return (
@@ -13,7 +13,10 @@ export default function TarjetaPublicacionCompacta({ publicacion, codigoIso, onP
       ) : (
         <View style={[styles.bandera, styles.banderaVacia]} />
       )}
-      <Text style={styles.pais} numberOfLines={1}>{publicacion.nombrePais}</Text>
+      <Text style={styles.pais} numberOfLines={1}>
+        {publicacion.nombrePais}
+        {publicacion.nombreCiudad ? <Text style={styles.ciudad}>{`  ${publicacion.nombreCiudad}`}</Text> : null}
+      </Text>
       <Text style={styles.fecha}>{formatearFechaCorta(publicacion.fechaPublicacion)}</Text>
     </Pressable>
   );
@@ -36,5 +39,6 @@ const styles = StyleSheet.create({
   bandera: { width: 28, height: 20, borderRadius: 3, backgroundColor: colors.superficieClara },
   banderaVacia: { borderWidth: 1, borderColor: colors.borde },
   pais: { flex: 1, color: colors.texto, fontSize: 15, fontWeight: '700' },
+  ciudad: { color: colors.textoSecundario, fontWeight: '300' },
   fecha: { color: colors.textoSecundario, fontSize: 13, fontVariant: ['tabular-nums'] },
 });

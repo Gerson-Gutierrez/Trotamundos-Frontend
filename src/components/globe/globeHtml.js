@@ -72,6 +72,7 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
   var TOKEN = ${JSON.stringify(CESIUM_ION_TOKEN)};
   var ISO_INICIAL = ${JSON.stringify(isoInicial)};
   var GEOJSON = ${JSON.stringify(GEOJSON_URL)};
+  var DENSIDAD = Math.min(2, window.devicePixelRatio || 1); // píxeles físicos por píxel CSS al renderizar
   var IMAGENES_ESRI = 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer';
   // Fronteras finas grisáceas, como en un atlas satelital
   var COLOR_BORDE = Cesium.Color.WHITE.withAlpha(0.5);
@@ -120,6 +121,9 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
       selectionIndicator: false, creditContainer: 'creditos', targetFrameRate: 30,
       // Fondo transparente: se ve la galaxia del canvas #espacio por detrás
       skyBox: false, contextOptions: { webgl: { alpha: true } },
+      // Renderiza a la resolución real de la pantalla (por defecto Cesium usa píxeles CSS y en
+      // teléfonos de alta densidad el globo y los nombres se ven pixelados)
+      useBrowserRecommendedResolution: false, msaaSamples: 4,
     };
     if (!TOKEN) {
       // Sin Cesium Ion: imagen satelital de Esri World Imagery (no requiere token, exige atribución)
@@ -142,6 +146,10 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
   if (escena.moon) escena.moon.show = false;
   escena.globe.enableLighting = false;
   escena.globe.baseColor = Cesium.Color.fromCssColorString('#0b2a4a');
+  // Hasta 2x la densidad de la pantalla: nítido sin castigar el rendimiento en teléfonos de 3x
+  viewer.resolutionScale = DENSIDAD / (window.devicePixelRatio || 1);
+  // Pide teselas de imagen un poco más detalladas (por defecto 2)
+  escena.globe.maximumScreenSpaceError = 1.5;
 
   // Un poco más de vida a la imagen satelital, sin perder el aspecto natural
   var capaBase = viewer.imageryLayers.get(0);
@@ -424,14 +432,16 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
         position: pos,
         text: p.nombre.toUpperCase(),
         // Letras blancas en mayúscula con contorno oscuro, legibles sobre la imagen satelital
-        font: '800 12px system-ui, sans-serif',
+        // Se rasteriza al tamaño en píxeles físicos y se escala a 12px: así el texto queda nítido
+        font: '800 ' + Math.round(12 * DENSIDAD) + 'px system-ui, sans-serif',
+        scale: 1 / DENSIDAD,
         fillColor: Cesium.Color.WHITE,
         outlineColor: Cesium.Color.fromCssColorString('#111').withAlpha(0.9),
         outlineWidth: 3,
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: Cesium.VerticalOrigin.CENTER,
-        scaleByDistance: new Cesium.NearFarScalar(1500000, 1.1, 30000000, 0.75),
+        scaleByDistance: new Cesium.NearFarScalar(1500000, 1.0, 30000000, 0.8),
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, distanciaMaximaPorRango(p.rango)),
       });
       etiquetasPaises.push({ label: label, normal: Cesium.Cartesian3.normalize(pos, new Cesium.Cartesian3()) });
