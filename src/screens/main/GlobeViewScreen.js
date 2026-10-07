@@ -49,7 +49,6 @@ export default function GlobeViewScreen({ navigation, route }) {
   return (
     <View style={styles.contenedor}>
       <GlobeWebView
-        modoSeleccion={eligiendoParaPublicar}
         onPaisTocado={resolver}
         onPaisConfirmado={async (p) => confirmar(await resolver(p))}
         onSinPais={() => { setPais(null); setAviso('Tocá un país en el globo'); }}

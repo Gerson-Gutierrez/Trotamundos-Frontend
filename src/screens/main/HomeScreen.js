@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import GlobeWebView from '../../components/globe/GlobeWebView';
 import TarjetaPublicacionCompacta from '../../components/publicacion/TarjetaPublicacionCompacta';
 import SelectorPais from '../../components/common/SelectorPais';
@@ -106,15 +107,8 @@ export default function HomeScreen({ navigation, route }) {
 
   const cabecera = (
     <View style={styles.fijo}>
-      <View style={styles.encabezado}>
-        {/* Tocar el logo actualiza el feed (sin pull-to-refresh, que estorbaba al usar el globo) */}
-        <Pressable onPress={recargar} disabled={refrescando} hitSlop={8}>
-          <Text style={styles.marca}>🌍 Trotamundos{refrescando ? ' …' : ''}</Text>
-        </Pressable>
-      </View>
-
       {/* El globo queda fuera de la lista para que arrastrar y hacer zoom no mueva el scroll */}
-      <View style={[styles.globo, { height: Math.round(height * 0.42) }]}>
+      <View style={[styles.globo, { height: Math.round(height * 0.5) }]}>
         <GlobeWebView
           ref={globoRef}
           onPaisTocado={manejarPaisTocado}
@@ -122,6 +116,13 @@ export default function HomeScreen({ navigation, route }) {
           onSinPais={() => setPaisTocado(pais)}
           onError={setErrorGlobo}
         />
+        {/* Actualiza el feed (sin pull-to-refresh, que estorbaba al usar el globo) */}
+        <Pressable style={styles.actualizar} onPress={recargar} disabled={refrescando} hitSlop={8}
+          accessibilityLabel="Actualizar publicaciones">
+          {refrescando
+            ? <ActivityIndicator size="small" color={colors.primario} />
+            : <Ionicons name="refresh" size={20} color={colors.texto} />}
+        </Pressable>
       </View>
 
       {/* Nombre del país tocado + acción para verlo (alternativa al doble toque) */}
@@ -220,10 +221,12 @@ const styles = StyleSheet.create({
   fijo: { flexShrink: 0 },
   lista: { paddingBottom: 24 },
   margenLateral: { marginHorizontal: 20 },
-  encabezado: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 10 },
-  marca: { color: colors.primario, fontSize: 22, fontWeight: '900' },
   enlace: { color: colors.primario, fontWeight: '600' },
-  globo: { marginHorizontal: 20, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: colors.borde },
+  globo: { marginHorizontal: 12, marginTop: 8, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: colors.borde },
+  actualizar: {
+    position: 'absolute', top: 10, right: 10, width: 38, height: 38, borderRadius: 19,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(17,24,39,0.75)',
+  },
   tocado: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     marginHorizontal: 20, marginTop: 10, padding: 12,

@@ -29,7 +29,7 @@ const GEOJSON_URL =
  * Mensajes app -> globo:
  *   window.seleccionarPais(iso)  |  postMessage({ type:'seleccionarPais', iso })
  */
-export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = {}) {
+export function construirGlobeHtml({ isoInicial = '' } = {}) {
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -44,41 +44,32 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
 <script src="${CESIUM_BASE}/Cesium.js"></script>
 <link href="${CESIUM_BASE}/Widgets/widgets.css" rel="stylesheet">
 <style>
-  html, body, #globo { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: ${colors.fondo}; }
+  html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #05031a; }
+  /* El globo se dibuja con fondo transparente sobre una galaxia pintada en este canvas */
+  #espacio, #halo { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #globo { position: absolute; inset: 0; background: transparent; }
   #creditos { display: none; }
   #estado {
     position: absolute; top: 8px; left: 8px; right: 8px; padding: 6px; text-align: center;
     font: 13px system-ui, sans-serif; color: ${colors.textoSecundario}; pointer-events: none;
   }
-  #etiqueta {
-    position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
-    max-width: 90%; padding: 8px 14px; border-radius: 18px; pointer-events: none;
-    background: rgba(17,24,39,0.92); border: 1px solid ${colors.primario};
-    color: ${colors.texto}; font: 600 14px system-ui, sans-serif; text-align: center;
-    opacity: 0; transition: opacity .15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  #etiqueta.visible { opacity: 1; }
-  #etiqueta small { display: block; color: ${colors.textoSecundario}; font-weight: 400; font-size: 11px; }
   .cesium-viewer-bottom { display: none !important; }
 </style>
 </head>
 <body>
+<canvas id="espacio"></canvas>
+<canvas id="halo"></canvas>
 <div id="globo"></div>
 <div id="creditos"></div>
 <div id="estado">Cargando globo…</div>
-<div id="etiqueta"></div>
 <script>
 (function () {
   var TOKEN = ${JSON.stringify(CESIUM_ION_TOKEN)};
   var ISO_INICIAL = ${JSON.stringify(isoInicial)};
   var GEOJSON = ${JSON.stringify(GEOJSON_URL)};
-  // En el inicio el doble toque filtra las publicaciones; en el wizard solo elige el país
-  var AYUDA_TOCAR = ${JSON.stringify(modoSeleccion ? 'Tocá dos veces para elegirlo' : 'Tocá dos veces para ver sus publicaciones')};
-  var AYUDA_ELEGIDO = ${JSON.stringify(modoSeleccion ? 'País elegido' : 'Mostrando sus publicaciones')};
   var COLOR_BORDE = Cesium.Color.fromCssColorString('${colors.primario}').withAlpha(0.55);
   var COLOR_SELECCION = Cesium.Color.fromCssColorString('${colors.primario}');
   var estado = document.getElementById('estado');
-  var etiqueta = document.getElementById('etiqueta');
 
   function enviar(msg) {
     var s = JSON.stringify(msg);
@@ -86,10 +77,57 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
     else if (window.parent && window.parent !== window) window.parent.postMessage(s, '*');
   }
 
-  function mostrarEtiqueta(texto, ayuda) {
-    etiqueta.innerHTML = texto ? texto + (ayuda ? '<small>' + ayuda + '<\\/small>' : '') : '';
-    etiqueta.classList.toggle('visible', !!texto);
+  // ---------- Galaxia de fondo ----------
+  // Nebulosas de colores + estrellas, pintadas una vez en un canvas detrás del globo.
+  function pintarGalaxia() {
+    var lienzo = document.getElementById('espacio');
+    var escala = window.devicePixelRatio || 1;
+    var w = window.innerWidth, h = window.innerHeight;
+    lienzo.width = w * escala; lienzo.height = h * escala;
+    var ctx = lienzo.getContext('2d');
+    ctx.scale(escala, escala);
+
+    var fondo = ctx.createLinearGradient(0, 0, w, h);
+    fondo.addColorStop(0, '#0a0430');
+    fondo.addColorStop(0.5, '#05031a');
+    fondo.addColorStop(1, '#140326');
+    ctx.fillStyle = fondo;
+    ctx.fillRect(0, 0, w, h);
+
+    var nebulosas = [
+      [0.15, 0.2, 0.55, 'rgba(155, 48, 255, 0.55)'],
+      [0.85, 0.15, 0.45, 'rgba(255, 46, 160, 0.45)'],
+      [0.8, 0.85, 0.6, 'rgba(0, 190, 255, 0.45)'],
+      [0.2, 0.9, 0.5, 'rgba(255, 120, 40, 0.35)'],
+      [0.5, 0.5, 0.35, 'rgba(60, 90, 255, 0.35)'],
+    ];
+    ctx.globalCompositeOperation = 'lighter';
+    nebulosas.forEach(function (n) {
+      var r = Math.max(w, h) * n[2];
+      var g = ctx.createRadialGradient(w * n[0], h * n[1], 0, w * n[0], h * n[1], r);
+      g.addColorStop(0, n[3]);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+    });
+
+    var tonos = ['#ffffff', '#ffffff', '#cfe8ff', '#ffd6f5', '#fff3b0', '#b0fff5'];
+    var cantidad = Math.round((w * h) / 900);
+    for (var i = 0; i < cantidad; i++) {
+      var x = Math.random() * w, y = Math.random() * h;
+      var radio = Math.random() < 0.06 ? 1.2 + Math.random() * 1.3 : 0.3 + Math.random() * 0.8;
+      ctx.globalAlpha = 0.5 + Math.random() * 0.5;
+      ctx.fillStyle = tonos[(Math.random() * tonos.length) | 0];
+      if (radio > 1.2) { ctx.shadowBlur = 6; ctx.shadowColor = ctx.fillStyle; } else { ctx.shadowBlur = 0; }
+      ctx.beginPath();
+      ctx.arc(x, y, radio, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
   }
+  pintarGalaxia();
+  window.addEventListener('resize', pintarGalaxia);
 
   // ---------- Viewer ----------
   var viewer;
@@ -99,6 +137,8 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
       animation: false, timeline: false, baseLayerPicker: false, geocoder: false, homeButton: false,
       sceneModePicker: false, navigationHelpButton: false, fullscreenButton: false, infoBox: false,
       selectionIndicator: false, creditContainer: 'creditos', targetFrameRate: 30,
+      // Fondo transparente: se ve la galaxia del canvas #espacio por detrás
+      skyBox: false, contextOptions: { webgl: { alpha: true } },
     };
     if (!TOKEN) {
       // Sin Cesium Ion: imagen Natural Earth II incluida en el build de Cesium (no requiere token)
@@ -114,8 +154,69 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
     return;
   }
 
-  viewer.scene.globe.enableLighting = false;
-  viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('${colors.superficie}');
+  var escena = viewer.scene;
+  escena.backgroundColor = Cesium.Color.TRANSPARENT;
+  if (escena.sun) escena.sun.show = false;
+  if (escena.moon) escena.moon.show = false;
+  escena.globe.enableLighting = false;
+  escena.globe.baseColor = Cesium.Color.fromCssColorString('#1565c0');
+
+  // Colores vivos en la imagen satelital
+  var capaBase = viewer.imageryLayers.get(0);
+  if (capaBase) {
+    capaBase.saturation = 1.8;
+    capaBase.contrast = 1.25;
+    capaBase.brightness = 1.15;
+  }
+
+  // La atmósfera de Cesium no se ve sobre un fondo transparente (y la del suelo vuelve
+  // translúcido al globo): se reemplaza por un halo propio dibujado en #halo.
+  escena.skyAtmosphere.show = false;
+  escena.globe.showGroundAtmosphere = false;
+
+  // ---------- Halo de atmósfera ----------
+  // Se proyecta el centro de la Tierra a pantalla y se calcula el radio aparente del globo
+  // según la distancia de la cámara; el halo se redibuja solo cuando cambian.
+  var halo = document.getElementById('halo');
+  var ctxHalo = halo.getContext('2d');
+  var ultimoHalo = '';
+  var aVentana = Cesium.SceneTransforms.worldToWindowCoordinates || Cesium.SceneTransforms.wgs84ToWindowCoordinates;
+
+  function dibujarHalo() {
+    var escala = window.devicePixelRatio || 1;
+    var w = window.innerWidth, h = window.innerHeight;
+    var centro = aVentana(escena, Cesium.Cartesian3.ZERO);
+    var distancia = Cesium.Cartesian3.magnitude(viewer.camera.positionWC);
+    var R = Cesium.Ellipsoid.WGS84.maximumRadius;
+    var clave = '';
+    var radio = 0;
+    if (centro && distancia > R) {
+      var angulo = Math.asin(R / distancia);
+      radio = Math.tan(angulo) / Math.tan(viewer.camera.frustum.fovy / 2) * (h / 2);
+      clave = Math.round(centro.x) + ',' + Math.round(centro.y) + ',' + Math.round(radio) + ',' + w + 'x' + h;
+    }
+    if (clave === ultimoHalo) return;
+    ultimoHalo = clave;
+
+    if (halo.width !== w * escala || halo.height !== h * escala) {
+      halo.width = w * escala; halo.height = h * escala;
+    }
+    ctxHalo.setTransform(escala, 0, 0, escala, 0, 0);
+    ctxHalo.clearRect(0, 0, w, h);
+    if (!clave) return;
+
+    var exterior = radio * 1.16;
+    var g = ctxHalo.createRadialGradient(centro.x, centro.y, radio * 0.96, centro.x, centro.y, exterior);
+    g.addColorStop(0, 'rgba(190, 240, 255, 0.95)');
+    g.addColorStop(0.18, 'rgba(90, 200, 255, 0.75)');
+    g.addColorStop(0.5, 'rgba(60, 120, 255, 0.35)');
+    g.addColorStop(1, 'rgba(120, 60, 255, 0)');
+    ctxHalo.fillStyle = g;
+    ctxHalo.beginPath();
+    ctxHalo.arc(centro.x, centro.y, exterior, 0, Math.PI * 2);
+    ctxHalo.fill();
+  }
+  escena.postRender.addEventListener(dibujarHalo);
   viewer.scene.screenSpaceCameraController.minimumZoomDistance = 400000;
   viewer.scene.screenSpaceCameraController.maximumZoomDistance = 40000000;
   viewer.camera.setView({ destination: Cesium.Cartesian3.fromDegrees(-60, -10, 25000000) });
@@ -262,17 +363,18 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
   }
 
   // ---------- Nombres de los países ----------
-  // Los países importantes (LABELRANK bajo) se ven desde lejos; los chicos aparecen al acercarse.
+  // Con el globo entero a la vista no hay nombres; van apareciendo al acercarse,
+  // primero los países importantes (LABELRANK bajo) y después los chicos.
   var nombres = new Cesium.LabelCollection();
   viewer.scene.primitives.add(nombres);
   var etiquetasPaises = []; // { label, normal }
 
   function distanciaMaximaPorRango(rango) {
-    if (rango <= 2) return Number.POSITIVE_INFINITY;
-    if (rango === 3) return 18000000;
-    if (rango === 4) return 10000000;
-    if (rango === 5) return 6000000;
-    return 3500000;
+    if (rango <= 2) return 15000000;
+    if (rango === 3) return 9000000;
+    if (rango === 4) return 6000000;
+    if (rango === 5) return 4000000;
+    return 2500000;
   }
 
   function dibujarNombres() {
@@ -283,11 +385,13 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
       var label = nombres.add({
         position: pos,
         text: p.nombre,
-        font: '600 13px system-ui, sans-serif',
-        fillColor: Cesium.Color.WHITE,
-        outlineColor: Cesium.Color.BLACK,
-        outlineWidth: 3,
-        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        font: '700 12px system-ui, sans-serif',
+        // Cartel beige sin borde con letras oscuras
+        fillColor: Cesium.Color.fromCssColorString('#3b2a12'),
+        style: Cesium.LabelStyle.FILL,
+        showBackground: true,
+        backgroundColor: Cesium.Color.fromCssColorString('#f6e7b4').withAlpha(0.93),
+        backgroundPadding: new Cesium.Cartesian2(7, 4),
         horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
         verticalOrigin: Cesium.VerticalOrigin.CENTER,
         scaleByDistance: new Cesium.NearFarScalar(1500000, 1.1, 30000000, 0.75),
@@ -378,29 +482,16 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
   var manejador = viewer.screenSpaceEventHandler;
   var confirmado = null; // país cuyo filtro está aplicado en la app
 
-  // Tocar fuera de tierra no descarta el país que se está mostrando: vuelve a él
-  function volverAlConfirmado() {
-    resaltar(confirmado);
-    mostrarEtiqueta(
-      confirmado ? confirmado.nombre : 'Tocá un país',
-      confirmado ? AYUDA_ELEGIDO : AYUDA_TOCAR
-    );
-  }
 
   manejador.setInputAction(function (click) {
     var pais = paisEnPantalla(click.position);
     if (!pais) {
-      volverAlConfirmado();
+      // Tocar fuera de tierra no descarta el país que se está mostrando: vuelve a él
+      resaltar(confirmado);
       enviar({ type: 'sinPais' });
       return;
     }
     resaltar(pais);
-    mostrarEtiqueta(
-      pais.nombre,
-      confirmado && confirmado.iso === pais.iso
-        ? AYUDA_ELEGIDO
-        : AYUDA_TOCAR
-    );
     enviar({ type: 'pais', iso: pais.iso, nombre: pais.nombre });
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
@@ -410,7 +501,6 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
     confirmado = pais;
     resaltar(pais);
     volarA(pais);
-    mostrarEtiqueta(pais.nombre, AYUDA_ELEGIDO);
     enviar({ type: 'paisConfirmado', iso: pais.iso, nombre: pais.nombre });
   }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
@@ -428,13 +518,11 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
     confirmado = pais;
     resaltar(pais);
     volarA(pais);
-    mostrarEtiqueta(pais.nombre, AYUDA_ELEGIDO);
     return true;
   };
   window.limpiarSeleccion = function () {
     confirmado = null;
     resaltar(null);
-    mostrarEtiqueta('Tocá un país', AYUDA_TOCAR);
   };
 
   window.addEventListener('message', function (ev) {
@@ -474,7 +562,6 @@ export function construirGlobeHtml({ isoInicial = '', modoSeleccion = false } = 
       enviar({ type: 'listo', cantidadPaises: paises.length });
 
       if (ISO_INICIAL) window.seleccionarPais(ISO_INICIAL);
-      else mostrarEtiqueta('Tocá un país', AYUDA_TOCAR);
     })
     .catch(function (e) {
       estado.textContent = 'No se pudieron cargar las fronteras.';

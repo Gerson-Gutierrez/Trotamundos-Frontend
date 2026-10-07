@@ -12,11 +12,11 @@ import { construirGlobeHtml } from './globeHtml';
  * Misma API que GlobeWebView.native.js
  */
 const GlobeWebView = forwardRef(function GlobeWebView(
-  { onPaisTocado, onPaisConfirmado, onSinPais, onListo, onError, isoInicial, modoSeleccion, style },
+  { onPaisTocado, onPaisConfirmado, onSinPais, onListo, onError, isoInicial, style },
   ref
 ) {
   const iframeRef = useRef(null);
-  const html = useMemo(() => construirGlobeHtml({ isoInicial, modoSeleccion }), [isoInicial, modoSeleccion]);
+  const html = useMemo(() => construirGlobeHtml({ isoInicial }), [isoInicial]);
 
   const enviar = (mensaje) => {
     iframeRef.current?.contentWindow?.postMessage(JSON.stringify(mensaje), '*');

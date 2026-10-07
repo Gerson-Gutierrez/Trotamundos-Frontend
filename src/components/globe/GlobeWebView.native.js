@@ -16,11 +16,11 @@ import { construirGlobeHtml } from './globeHtml';
  * Ref: seleccionarPais(iso), limpiarSeleccion()
  */
 const GlobeWebView = forwardRef(function GlobeWebView(
-  { onPaisTocado, onPaisConfirmado, onSinPais, onListo, onError, isoInicial, modoSeleccion, style },
+  { onPaisTocado, onPaisConfirmado, onSinPais, onListo, onError, isoInicial, style },
   ref
 ) {
   const webRef = useRef(null);
-  const html = useMemo(() => construirGlobeHtml({ isoInicial, modoSeleccion }), [isoInicial, modoSeleccion]);
+  const html = useMemo(() => construirGlobeHtml({ isoInicial }), [isoInicial]);
 
   useImperativeHandle(ref, () => ({
     seleccionarPais: (iso) => {
