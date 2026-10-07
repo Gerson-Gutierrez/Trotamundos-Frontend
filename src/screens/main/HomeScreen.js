@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import GlobeWebView from '../../components/globe/GlobeWebView';
@@ -96,7 +96,10 @@ export default function HomeScreen({ navigation, route }) {
   const cabecera = (
     <View>
       <View style={styles.encabezado}>
-        <Text style={styles.marca}>🌍 Trotamundos</Text>
+        {/* Tocar el logo actualiza el feed (sin pull-to-refresh, que estorbaba al usar el globo) */}
+        <Pressable onPress={recargar} disabled={refrescando} hitSlop={8}>
+          <Text style={styles.marca}>🌍 Trotamundos{refrescando ? ' …' : ''}</Text>
+        </Pressable>
         <Pressable onPress={() => navigation.navigate('GlobeView')}>
           <Text style={styles.enlace}>Globo completo</Text>
         </Pressable>
@@ -173,7 +176,6 @@ export default function HomeScreen({ navigation, route }) {
         keyExtractor={(p) => String(p.publicacionId)}
         ListHeaderComponent={cabecera}
         contentContainerStyle={styles.lista}
-        refreshControl={<RefreshControl refreshing={refrescando} onRefresh={recargar} tintColor={colors.primario} />}
         ListEmptyComponent={
           cargando ? <LoadingSpinner pantallaCompleta={false} /> : (
             <Text style={styles.vacio}>
@@ -204,7 +206,7 @@ function Chip({ texto, activo, onPress }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.fondo },
-  lista: { paddingBottom: 30 },
+  lista: { paddingBottom: 24 },
   margenLateral: { marginHorizontal: 20 },
   encabezado: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12 },
   marca: { color: colors.primario, fontSize: 22, fontWeight: '900' },

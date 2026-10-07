@@ -28,11 +28,11 @@ export default function MainTabNavigator() {
 
   return (
     <Tab.Navigator
+      tabBar={() => null} // el menú fijo vive en AppNavigator (BarraMenu)
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primario,
         tabBarInactiveTintColor: colors.textoSecundario,
-        tabBar: () => null, // el menú fijo vive en AppNavigator (BarraMenu)
         tabBarStyle: { backgroundColor: colors.superficie, borderTopColor: colors.borde },
         tabBarIcon: ({ focused, color, size }) => (
           <Ionicons name={iconos[route.name][focused ? 0 : 1]} size={size} color={color} />
