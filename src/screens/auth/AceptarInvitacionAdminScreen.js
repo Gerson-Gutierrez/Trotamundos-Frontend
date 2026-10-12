@@ -6,6 +6,7 @@ import Button from '../../components/common/Button';
 import Mensaje from '../../components/common/Mensaje';
 import { authApi } from '../../api/authApi';
 import { mensajeError } from '../../utils/formatters';
+import { t } from '../../i18n';
 
 // Se abre desde el enlace del correo (…/admin/register?token=XYZ); el token también puede pegarse a mano.
 export default function AceptarInvitacionAdminScreen({ route, navigation }) {
@@ -18,10 +19,10 @@ export default function AceptarInvitacionAdminScreen({ route, navigation }) {
   const [cargando, setCargando] = useState(false);
 
   const aceptar = async () => {
-    if (!token.trim()) return setError('Ingresá el código de la invitación.');
-    if (!nombre.trim()) return setError('Ingresá tu nombre completo.');
-    if (password.length < 8) return setError('La contraseña debe tener al menos 8 caracteres.');
-    if (password !== confirmar) return setError('Las contraseñas no coinciden.');
+    if (!token.trim()) return setError(t('Ingresá el código de la invitación.'));
+    if (!nombre.trim()) return setError(t('Ingresá tu nombre completo.'));
+    if (password.length < 8) return setError(t('La contraseña debe tener al menos 8 caracteres.'));
+    if (password !== confirmar) return setError(t('Las contraseñas no coinciden.'));
     setError('');
     setCargando(true);
     try {

@@ -3,6 +3,8 @@ import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native
 import { avisar } from '../../utils/dialogos';
 import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../../constants/colors';
+import { t } from '../../i18n';
+import Icono from './Icono';
 
 // Abre la galería y devuelve los assets elegidos (expo-image-picker).
 export async function elegirImagenes({ multiple = false, limite = 10 } = {}) {
@@ -35,10 +37,10 @@ export default function SelectorImagen({ uri, onSeleccion, tamano = 110, etiquet
         <Image source={{ uri }} style={[styles.imagen, { width: tamano, height: tamano, borderRadius: tamano / 2 }]} />
       ) : (
         <View style={[styles.vacio, { width: tamano, height: tamano, borderRadius: tamano / 2 }]}>
-          <Text style={styles.icono}>📷</Text>
+          <Icono nombre="camara" size={36} color={colors.textoSecundario} />
         </View>
       )}
-      <Text style={styles.etiqueta}>{etiqueta}</Text>
+      <Text style={styles.etiqueta}>{t(etiqueta)}</Text>
     </Pressable>
   );
 }
@@ -50,6 +52,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.superficie, borderWidth: 2, borderColor: colors.borde, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center',
   },
-  icono: { fontSize: 32 },
   etiqueta: { color: colors.primario, marginTop: 8, fontWeight: '600' },
 });

@@ -2,6 +2,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } fr
 import { StyleSheet, View } from 'react-native';
 import { colors } from '../../constants/colors';
 import { construirGlobeHtml } from './globeHtml';
+import { idiomaActual } from '../../i18n';
 
 /**
  * Versión web: react-native-webview no soporta web, así que se usa un iframe.
@@ -16,7 +17,7 @@ const GlobeWebView = forwardRef(function GlobeWebView(
   ref
 ) {
   const iframeRef = useRef(null);
-  const html = useMemo(() => construirGlobeHtml({ isoInicial }), [isoInicial]);
+  const html = useMemo(() => construirGlobeHtml({ isoInicial, idioma: idiomaActual() }), [isoInicial]);
 
   const enviar = (mensaje) => {
     iframeRef.current?.contentWindow?.postMessage(JSON.stringify(mensaje), '*');

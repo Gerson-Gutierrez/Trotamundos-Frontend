@@ -7,7 +7,7 @@ export default function SeccionAlojamiento({ alojamiento }) {
   if (!alojamiento) return null;
 
   return (
-    <Seccion titulo="🏨 Alojamiento">
+    <Seccion titulo="Alojamiento" icono="alojamiento">
       <Text style={s.subtitulo}>{alojamiento.nombreHostelHotel}</Text>
 
       {/* Tocar la dirección abre el mapa */}

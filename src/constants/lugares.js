@@ -3,11 +3,11 @@
 // interés y direcciones comunes.
 
 export const CATEGORIAS = {
-  alojamiento: { icono: '🏨', etiqueta: 'Alojamiento' },
-  restaurante: { icono: '🍽️', etiqueta: 'Restaurante' },
-  agencia: { icono: '🎫', etiqueta: 'Agencia de turismo' },
-  lugar: { icono: '📌', etiqueta: 'Lugar' },
-  direccion: { icono: '📍', etiqueta: 'Dirección' },
+  alojamiento: { icono: 'alojamiento', etiqueta: 'Alojamiento' },
+  restaurante: { icono: 'restaurante', etiqueta: 'Restaurante' },
+  agencia: { icono: 'agencia', etiqueta: 'Agencia de turismo' },
+  lugar: { icono: 'lugar', etiqueta: 'Lugar' },
+  direccion: { icono: 'direccion', etiqueta: 'Dirección' },
 };
 
 // type de OSM -> subetiqueta legible en español

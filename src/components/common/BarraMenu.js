@@ -3,6 +3,7 @@ import { Keyboard, Platform, Pressable, StyleSheet, Text, View } from 'react-nat
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../constants/colors';
+import { t } from '../../i18n';
 
 // Rutas (en cualquier nivel de anidación) que pertenecen a cada opción del menú.
 const OPCIONES_VIAJERO = [
@@ -12,7 +13,7 @@ const OPCIONES_VIAJERO = [
   { clave: 'Publicar', etiqueta: 'Publicar', icono: ['add-circle', 'add-circle-outline'],
     rutas: ['WizardCiudad', 'WizardAlojamiento', 'WizardGastronomia', 'WizardRecomendaciones', 'WizardFotos', 'WizardConfirmar'],
     ir: (nav) => nav.navigate('Wizard') },
-  { clave: 'Perfil', etiqueta: 'Perfil', icono: ['person', 'person-outline'], rutas: ['Perfil', 'EditarPerfil'],
+  { clave: 'Perfil', etiqueta: 'Perfil', icono: ['person', 'person-outline'], rutas: ['Perfil', 'EditarPerfil', 'Favoritos'],
     ir: (nav) => nav.navigate('MainTabs', { screen: 'Perfil' }) },
 ];
 
@@ -63,7 +64,7 @@ export default function BarraMenu({ navegacion, rutaActual, esAdmin, esSuperAdmi
         return (
           <Pressable key={o.clave} style={styles.item} onPress={() => o.ir(navegacion)} accessibilityRole="button">
             <Ionicons name={o.icono[activa ? 0 : 1]} size={22} color={color} />
-            <Text style={[styles.etiqueta, { color }]} numberOfLines={1}>{o.etiqueta}</Text>
+            <Text style={[styles.etiqueta, { color }]} numberOfLines={1}>{t(o.etiqueta)}</Text>
           </Pressable>
         );
       })}

@@ -7,6 +7,8 @@ import Mensaje from '../../components/common/Mensaje';
 import { colors } from '../../constants/colors';
 import { reportesApi } from '../../api/reportesApi';
 import { formatearFechaHora, mensajeError, textoAutoEliminacion } from '../../utils/formatters';
+import { t } from '../../i18n';
+import { TextoIcono } from '../../components/common/Icono';
 
 export default function DashboardAdminScreen({ navigation }) {
   const [pendientes, setPendientes] = useState(0);
@@ -44,18 +46,18 @@ export default function DashboardAdminScreen({ navigation }) {
       </View>
 
       <Pressable style={styles.enlace} onPress={() => navigation.navigate('ModeracionReportes')}>
-        <Text style={styles.enlaceTexto}>🚩 Ver reportes</Text>
+        <TextoIcono icono="denuncia" size={20} color={colors.primario} style={styles.enlaceTexto}>{t('Ver reportes')}</TextoIcono>
       </Pressable>
       <Pressable style={styles.enlace} onPress={() => navigation.navigate('UsuariosAdmin')}>
-        <Text style={styles.enlaceTexto}>👥 Gestionar usuarios</Text>
+        <TextoIcono icono="usuarios" size={20} color={colors.primario} style={styles.enlaceTexto}>{t('Gestionar usuarios')}</TextoIcono>
       </Pressable>
 
-      <Text style={styles.subtitulo}>Alertas</Text>
-      {notificaciones.length === 0 && <Text style={styles.vacio}>No hay alertas.</Text>}
+      <Text style={styles.subtitulo}>{t('Alertas')}</Text>
+      {notificaciones.length === 0 && <Text style={styles.vacio}>{t('No hay alertas.')}</Text>}
       {notificaciones.map((n) => (
         <Pressable key={n.notificacionId} onPress={() => marcarLeida(n)} style={[styles.notif, !n.leida && styles.notifNoLeida]}>
-          <Text style={styles.notifTitulo}>{!n.leida ? '● ' : ''}{n.titulo}</Text>
-          <Text style={styles.notifMensaje}>{n.mensaje}</Text>
+          <Text style={styles.notifTitulo}>{!n.leida ? '● ' : ''}{t(n.titulo)}</Text>
+          <Text style={styles.notifMensaje}>{t(n.mensaje)}</Text>
           <Text style={styles.notifFecha}>{formatearFechaHora(n.fechaCreacion)}</Text>
           {n.fechaLectura ? <Text style={styles.notifFecha}>{textoAutoEliminacion(n.fechaLectura)}</Text> : null}
         </Pressable>
@@ -68,7 +70,7 @@ function Tarjeta({ numero, etiqueta, onPress }) {
   return (
     <Pressable onPress={onPress} style={styles.tarjeta}>
       <Text style={styles.numero}>{numero}</Text>
-      <Text style={styles.etiqueta}>{etiqueta}</Text>
+      <Text style={styles.etiqueta}>{t(etiqueta)}</Text>
     </Pressable>
   );
 }

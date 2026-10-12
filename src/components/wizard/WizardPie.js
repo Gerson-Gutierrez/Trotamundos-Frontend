@@ -2,11 +2,12 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Button from '../common/Button';
 import { colors } from '../../constants/colors';
+import { t } from '../../i18n';
 
 const TOTAL_PASOS = 6;
 
 // Barra de progreso + botones de navegación comunes a todos los pasos del wizard.
-export default function WizardPie({ paso, onSiguiente, onOmitir, textoSiguiente = 'Siguiente', cargando, deshabilitado }) {
+export default function WizardPie({ paso, onSiguiente, onOmitir, textoSiguiente = 'Siguiente', iconoSiguiente, cargando, deshabilitado }) {
   return (
     <View style={styles.pie}>
       <View style={styles.progreso}>
@@ -14,8 +15,8 @@ export default function WizardPie({ paso, onSiguiente, onOmitir, textoSiguiente 
           <View key={i} style={[styles.segmento, i < paso && styles.segmentoActivo]} />
         ))}
       </View>
-      <Text style={styles.texto}>Paso {paso} de {TOTAL_PASOS}</Text>
-      <Button titulo={textoSiguiente} onPress={onSiguiente} cargando={cargando} deshabilitado={deshabilitado} />
+      <Text style={styles.texto}>{t('Paso {paso} de {total}', { paso, total: TOTAL_PASOS })}</Text>
+      <Button titulo={textoSiguiente} icono={iconoSiguiente} onPress={onSiguiente} cargando={cargando} deshabilitado={deshabilitado} />
       {onOmitir && <Button titulo="Omitir este paso" variant="texto" onPress={onOmitir} />}
     </View>
   );

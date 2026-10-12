@@ -5,6 +5,8 @@ import Button from '../../components/common/Button';
 import { colors } from '../../constants/colors';
 import { mapasApi } from '../../api/mapasApi';
 import { usePaises } from '../../hooks/usePaises';
+import { t } from '../../i18n';
+import { nombrePais } from '../../utils/formatters';
 
 /**
  * Globo a pantalla completa. Un toque muestra el país; doble toque (o el botón) lo confirma.
@@ -15,7 +17,7 @@ import { usePaises } from '../../hooks/usePaises';
 export default function GlobeViewScreen({ navigation, route }) {
   const { porIso } = usePaises();
   const [pais, setPais] = useState(null);
-  const [aviso, setAviso] = useState('Tocá un país en el globo');
+  const [aviso, setAviso] = useState(t('Tocá un país en el globo'));
   const destino = route.params?.destino || 'Inicio';
   const eligiendoParaPublicar = destino === 'WizardCiudad';
 
@@ -23,7 +25,7 @@ export default function GlobeViewScreen({ navigation, route }) {
     const encontrado = porIso[iso] || (await mapasApi.paisPorIso(iso).catch(() => null));
     if (!encontrado) {
       setPais(null);
-      setAviso(`${nombre} todavía no está disponible`);
+      setAviso(t('{pais} todavía no está disponible', { pais: nombre }));
       return null;
     }
     setPais(encontrado);
@@ -41,21 +43,21 @@ export default function GlobeViewScreen({ navigation, route }) {
   }, [eligiendoParaPublicar, navigation]);
 
   const tituloBoton = !pais
-    ? 'Elegí un país'
+    ? t('Elegí un país')
     : eligiendoParaPublicar
-      ? 'Aceptar'
-      : `Ver publicaciones de ${pais.nombre}`;
+      ? t('Aceptar')
+      : t('Ver publicaciones de {pais}', { pais: nombrePais(pais.codigoIso, pais.nombre) });
 
   return (
     <View style={styles.contenedor}>
       <GlobeWebView
         onPaisTocado={resolver}
         onPaisConfirmado={async (p) => confirmar(await resolver(p))}
-        onSinPais={() => { setPais(null); setAviso('Tocá un país en el globo'); }}
+        onSinPais={() => { setPais(null); setAviso(t('Tocá un país en el globo')); }}
         onError={setAviso}
       />
       <View style={styles.panel}>
-        <Text style={styles.texto}>{pais ? `${pais.nombre} (${pais.codigoIso})` : aviso}</Text>
+        <Text style={styles.texto}>{pais ? `${nombrePais(pais.codigoIso, pais.nombre)} (${pais.codigoIso})` : aviso}</Text>
         <Button titulo={tituloBoton} onPress={() => confirmar(pais)} deshabilitado={!pais} />
       </View>
     </View>

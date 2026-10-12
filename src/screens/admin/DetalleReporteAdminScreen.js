@@ -9,6 +9,7 @@ import { colors } from '../../constants/colors';
 import { reportesApi } from '../../api/reportesApi';
 import { formatearFechaHora, mensajeError } from '../../utils/formatters';
 import { avisar, confirmar } from '../../utils/dialogos';
+import { t } from '../../i18n';
 
 const ESTADOS = ['EnRevision', 'Resuelto', 'Desestimado'];
 
@@ -25,11 +26,11 @@ export default function DetalleReporteAdminScreen({ route, navigation }) {
   const resolver = async () => {
     if (eliminarPublicacion || bloquearAutor || eliminarUsuario) {
       const acciones = [
-        eliminarPublicacion && 'eliminar la publicación',
-        bloquearAutor && 'bloquear al autor',
-        eliminarUsuario && 'eliminar al autor (se borrarán todas sus publicaciones, es irreversible)',
-      ].filter(Boolean).join(' y ');
-      if (!(await confirmar('Confirmar', `Vas a ${acciones}. ¿Continuar?`, { textoOk: 'Sí', destructivo: true }))) return;
+        eliminarPublicacion && t('eliminar la publicación'),
+        bloquearAutor && t('bloquear al autor'),
+        eliminarUsuario && t('eliminar al autor (se borrarán todas sus publicaciones, es irreversible)'),
+      ].filter(Boolean).join(t(' y '));
+      if (!(await confirmar('Confirmar', t('Vas a {acciones}. ¿Continuar?', { acciones }), { textoOk: 'Sí', destructivo: true }))) return;
     }
     setError('');
     setCargando(true);
@@ -52,24 +53,24 @@ export default function DetalleReporteAdminScreen({ route, navigation }) {
 
   return (
     <Pantalla>
-      <Titulo subtitulo={`Reporte #${reporte.reporteId} · ${formatearFechaHora(reporte.fechaReporte)}`}>🚩 {reporte.motivo}</Titulo>
+      <Titulo subtitulo={`${t('Reporte #{id}', { id: reporte.reporteId })} · ${formatearFechaHora(reporte.fechaReporte)}`}>{t(reporte.motivo)}</Titulo>
 
       <View style={styles.info}>
-        <Text style={styles.infoTexto}>Denunciado por: <Text style={styles.resaltado}>{reporte.nombreUsuarioReportador}</Text></Text>
-        <Text style={styles.infoTexto}>Estado actual: <Text style={styles.resaltado}>{reporte.estado}</Text></Text>
+        <Text style={styles.infoTexto}>{t('Denunciado por:')} <Text style={styles.resaltado}>{reporte.nombreUsuarioReportador}</Text></Text>
+        <Text style={styles.infoTexto}>{t('Estado actual:')} <Text style={styles.resaltado}>{t(reporte.estado)}</Text></Text>
         {reporte.detalle ? <Text style={styles.detalle}>{`"${reporte.detalle}"`}</Text> : null}
       </View>
 
-      <Button titulo={`Ver publicación #${reporte.publicacionId}`} variant="secundario"
+      <Button titulo={t('Ver publicación #{id}', { id: reporte.publicacionId })} variant="secundario"
         onPress={() => navigation.navigate('DetallePublicacion', { id: reporte.publicacionId })} style={styles.espacio} />
 
       <Mensaje texto={error} />
 
-      <Text style={styles.etiqueta}>Nuevo estado</Text>
+      <Text style={styles.etiqueta}>{t('Nuevo estado')}</Text>
       <View style={styles.estados}>
         {ESTADOS.map((e) => (
           <Pressable key={e} onPress={() => setEstado(e)} style={[styles.chip, estado === e && styles.chipActivo]}>
-            <Text style={[styles.chipTexto, estado === e && styles.chipTextoActivo]}>{e}</Text>
+            <Text style={[styles.chipTexto, estado === e && styles.chipTextoActivo]}>{t(e)}</Text>
           </Pressable>
         ))}
       </View>
@@ -88,7 +89,7 @@ export default function DetalleReporteAdminScreen({ route, navigation }) {
 function Fila({ etiqueta, valor, onCambio }) {
   return (
     <View style={styles.fila}>
-      <Text style={styles.filaTexto}>{etiqueta}</Text>
+      <Text style={styles.filaTexto}>{t(etiqueta)}</Text>
       <Switch value={valor} onValueChange={onCambio} trackColor={{ true: colors.primarioOscuro }} thumbColor={valor ? colors.primario : colors.textoSecundario} />
     </View>
   );

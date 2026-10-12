@@ -1,19 +1,21 @@
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors } from '../../constants/colors';
+import { t } from '../../i18n';
 
-export default function Input({ etiqueta, error, style, inputStyle, multiline, ...props }) {
+export default function Input({ etiqueta, error, style, inputStyle, multiline, placeholder, ...props }) {
   return (
     <View style={[styles.contenedor, style]}>
-      {etiqueta ? <Text style={styles.etiqueta}>{etiqueta}</Text> : null}
+      {etiqueta ? <Text style={styles.etiqueta}>{t(etiqueta)}</Text> : null}
       <TextInput
         placeholderTextColor={colors.textoSecundario}
+        placeholder={placeholder ? t(placeholder) : undefined}
         style={[styles.input, multiline && styles.multiline, error && styles.inputError, inputStyle]}
         multiline={multiline}
         textAlignVertical={multiline ? 'top' : 'center'}
         {...props}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={styles.error}>{t(error)}</Text> : null}
     </View>
   );
 }

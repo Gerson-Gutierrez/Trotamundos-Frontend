@@ -8,6 +8,8 @@ import { elegirImagenes } from '../../components/common/SelectorImagen';
 import WizardPie from '../../components/wizard/WizardPie';
 import { colors } from '../../constants/colors';
 import { useWizard } from '../../hooks/useWizard';
+import { t } from '../../i18n';
+import Icono from '../../components/common/Icono';
 
 const CATEGORIAS = ['Alojamiento', 'Comida', 'Lugar'];
 const MAXIMO = 10;
@@ -30,7 +32,7 @@ export default function WizardStep5FotosScreen({ navigation }) {
 
   const siguiente = () => {
     if (imagenes.length === 0) {
-      return setError('Subí al menos una foto para continuar.');
+      return setError(t('Subí al menos una foto para continuar.'));
     }
 
     setError('');
@@ -40,22 +42,24 @@ export default function WizardStep5FotosScreen({ navigation }) {
 
   return (
     <Pantalla>
-      <Titulo subtitulo={`Subí las fotos que sacaste del lugar, el hospedaje, las comidas… (hasta ${MAXIMO})`}>Imágenes</Titulo>
+      <Titulo subtitulo={t('Subí las fotos que sacaste del lugar, el hospedaje, las comidas… (hasta {max})', { max: MAXIMO })}>Imágenes</Titulo>
 
       <Mensaje texto={error} />
 
-      <Button titulo="📷 Elegir fotos" variant="secundario" onPress={agregar} deshabilitado={imagenes.length >= MAXIMO} />
+      <Button titulo="Elegir fotos" icono="camara" variant="secundario" onPress={agregar} deshabilitado={imagenes.length >= MAXIMO} />
 
       <View style={styles.grilla}>
         {imagenes.map((img, i) => (
           <View key={`${img.asset.uri}-${i}`} style={styles.celda}>
             <Image source={{ uri: img.asset.uri }} style={styles.imagen} />
-            <Pressable onPress={() => quitar(i)} style={styles.quitar}><Text style={styles.quitarTexto}>✕</Text></Pressable>
+            <Pressable onPress={() => quitar(i)} style={styles.quitar} hitSlop={8} accessibilityLabel={t('Quitar')}>
+              <Icono nombre="cerrar" size={18} color={colors.blanco} />
+            </Pressable>
             <View style={styles.categorias}>
               {CATEGORIAS.map((c) => (
                 <Pressable key={c} onPress={() => cambiarCategoria(i, c)}
                   style={[styles.categoria, img.tipoCategoria === c && styles.categoriaActiva]}>
-                  <Text style={[styles.categoriaTexto, img.tipoCategoria === c && styles.categoriaTextoActiva]}>{c}</Text>
+                  <Text style={[styles.categoriaTexto, img.tipoCategoria === c && styles.categoriaTextoActiva]}>{t(c)}</Text>
                 </Pressable>
               ))}
             </View>
@@ -63,7 +67,7 @@ export default function WizardStep5FotosScreen({ navigation }) {
         ))}
       </View>
 
-      {imagenes.length === 0 && <Text style={styles.vacio}>Todavía no elegiste ninguna foto.</Text>}
+      {imagenes.length === 0 && <Text style={styles.vacio}>{t('Todavía no elegiste ninguna foto.')}</Text>}
 
       <WizardPie paso={5} onSiguiente={siguiente} textoSiguiente="Siguiente" />
     </Pantalla>
@@ -75,7 +79,6 @@ const styles = StyleSheet.create({
   celda: { backgroundColor: colors.superficie, borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: colors.borde },
   imagen: { width: '100%', height: 200 },
   quitar: { position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.6)', width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  quitarTexto: { color: colors.blanco, fontWeight: '700' },
   categorias: { flexDirection: 'row', gap: 6, padding: 10 },
   categoria: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14, borderWidth: 1, borderColor: colors.borde },
   categoriaActiva: { backgroundColor: colors.primario, borderColor: colors.primario },

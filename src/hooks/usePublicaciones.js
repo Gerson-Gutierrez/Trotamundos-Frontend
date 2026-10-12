@@ -18,6 +18,7 @@ export function usePublicaciones({ paisId, ciudadId, version = 0 } = {}) {
     else setCargando(true);
     setError(null);
     try {
+      // Una ciudad del catálogo que nadie registró llega con ciudadId 0: el servidor no devuelve nada, que es lo correcto
       const data = await publicacionesApi.feed({ paisId, ciudadId });
       if (id === ultimaPeticion.current) setPublicaciones(data);
     } catch (e) {

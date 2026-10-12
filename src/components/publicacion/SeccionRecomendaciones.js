@@ -3,6 +3,8 @@ import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../constants/colors';
 import { sinProtocolo } from '../../utils/formatters';
 import { avisar } from '../../utils/dialogos';
+import { t } from '../../i18n';
+import { TextoIcono } from '../common/Icono';
 import Seccion, { estilosSeccion as s } from './Seccion';
 
 export default function SeccionRecomendaciones({ recomendacion }) {
@@ -22,7 +24,7 @@ export default function SeccionRecomendaciones({ recomendacion }) {
   };
 
   return (
-    <Seccion titulo="🧭 Recomendaciones y actividades">
+    <Seccion titulo="Recomendaciones y actividades" icono="recomendaciones">
       {recomendacion.contenido ? <Text style={s.parrafo}>{recomendacion.contenido}</Text> : null}
 
       {agencias.map((a, i) => (
@@ -31,14 +33,14 @@ export default function SeccionRecomendaciones({ recomendacion }) {
             <Pressable
               onPress={() => abrirWeb(a.sitioWeb)}
               accessibilityRole="link"
-              accessibilityLabel={`Abrir la página de ${a.nombre}`}
+              accessibilityLabel={t('Abrir la página de {nombre}', { nombre: a.nombre })}
               style={({ pressed }) => pressed && styles.presionado}
             >
-              <Text style={[s.subtitulo, styles.enlace]}>🎫 {a.nombre}</Text>
-              <Text style={styles.url} numberOfLines={1}>🌐 {sinProtocolo(a.sitioWeb)}</Text>
+              <TextoIcono icono="agencia" color={colors.primario} style={[s.subtitulo, styles.enlace]}>{a.nombre}</TextoIcono>
+              <TextoIcono icono="web" size={13} color={colors.primario} style={styles.url} numberOfLines={1}>{sinProtocolo(a.sitioWeb)}</TextoIcono>
             </Pressable>
           ) : (
-            <Text style={s.subtitulo}>🎫 {a.nombre}</Text>
+            <TextoIcono icono="agencia" color={colors.primario} style={s.subtitulo}>{a.nombre}</TextoIcono>
           )}
 
         </View>

@@ -9,7 +9,9 @@ import { colors } from '../../constants/colors';
 import { archivosApi } from '../../api/archivosApi';
 import { publicacionesApi } from '../../api/publicacionesApi';
 import { useWizard } from '../../hooks/useWizard';
-import { mensajeError } from '../../utils/formatters';
+import { mensajeError, nombrePais } from '../../utils/formatters';
+import { t } from '../../i18n';
+import Icono, { TextoIcono } from '../../components/common/Icono';
 
 // Paso 6: resumen + publicación. Primero sube las imágenes, después crea la publicación.
 export default function WizardStep6ConfirmarScreen({ navigation }) {
@@ -22,17 +24,17 @@ export default function WizardStep6ConfirmarScreen({ navigation }) {
   const tieneContenido = alojamiento || gastronomia || recomendacion || imagenes.length > 0;
 
   const publicar = async () => {
-    if (!tieneContenido) return setError('La publicación necesita al menos una sección o una foto.');
+    if (!tieneContenido) return setError(t('La publicación necesita al menos una sección o una foto.'));
     setError('');
     setCargando(true);
     try {
       let urls = [];
       if (imagenes.length) {
-        setEstado(`Subiendo ${imagenes.length} imagen(es)…`);
+        setEstado(t('Subiendo {n} imagen(es)…', { n: imagenes.length }));
         const { urls: subidas } = await archivosApi.subirImagenesPublicacion(imagenes.map((i) => i.asset));
         urls = subidas.map((url, i) => ({ url, tipoCategoria: imagenes[i]?.tipoCategoria }));
       }
-      setEstado('Creando publicación…');
+      setEstado(t('Creando publicación…'));
       const creada = await publicacionesApi.crear(construirDto(urls));
       reiniciar();
       // Reemplaza el wizard por el detalle de la publicación recién creada
@@ -52,11 +54,11 @@ export default function WizardStep6ConfirmarScreen({ navigation }) {
       <Mensaje texto={error} />
       {estado ? <Mensaje tipo="info" texto={estado} /> : null}
 
-      <Bloque titulo="📍 Ubicación" onEditar={() => navigation.navigate('WizardCiudad')}>
-        <Text style={styles.texto}>{ciudad?.nombre}, {pais?.nombre}</Text>
+      <Bloque titulo="Ubicación" icono="ubicacion" onEditar={() => navigation.navigate('WizardCiudad')}>
+        <Text style={styles.texto}>{ciudad?.nombre}, {nombrePais(pais?.codigoIso, pais?.nombre)}</Text>
       </Bloque>
 
-      <Bloque titulo="🏨 Alojamiento" onEditar={() => navigation.navigate('WizardAlojamiento')} vacio={!alojamiento}>
+      <Bloque titulo="Alojamiento" icono="alojamiento" onEditar={() => navigation.navigate('WizardAlojamiento')} vacio={!alojamiento}>
         {alojamiento && (
           <>
             <Text style={styles.texto}>{alojamiento.nombreHostelHotel}</Text>
@@ -66,35 +68,38 @@ export default function WizardStep6ConfirmarScreen({ navigation }) {
         )}
       </Bloque>
 
-      <Bloque titulo="🍽️ Restaurantes y comidas" onEditar={() => navigation.navigate('WizardGastronomia')} vacio={!gastronomia}>
+      <Bloque titulo="Restaurantes y comidas" icono="restaurante" onEditar={() => navigation.navigate('WizardGastronomia')} vacio={!gastronomia}>
         {gastronomia?.reseñaGeneral ? <Text style={styles.parrafo} numberOfLines={3}>{gastronomia.reseñaGeneral}</Text> : null}
         {gastronomia?.restaurantes?.map((r, i) => <Text key={i} style={styles.texto}>• {r.nombre}</Text>)}
       </Bloque>
 
-      <Bloque titulo="🧭 Recomendaciones" onEditar={() => navigation.navigate('WizardRecomendaciones')} vacio={!recomendacion}>
+      <Bloque titulo="Recomendaciones" icono="recomendaciones" onEditar={() => navigation.navigate('WizardRecomendaciones')} vacio={!recomendacion}>
         {recomendacion?.contenido ? <Text style={styles.parrafo} numberOfLines={4}>{recomendacion.contenido}</Text> : null}
-        {recomendacion?.agencias?.map((a, i) => <Text key={i} style={styles.texto}>🎫 {a.nombre}</Text>)}
+        {recomendacion?.agencias?.map((a, i) => <TextoIcono key={i} icono="agencia" color={colors.primario} style={styles.texto}>{a.nombre}</TextoIcono>)}
       </Bloque>
 
-      <Bloque titulo={`📷 Imágenes (${imagenes.length})`} onEditar={() => navigation.navigate('WizardFotos')} vacio={!imagenes.length}>
+      <Bloque titulo={`${t('Imágenes')} (${imagenes.length})`} icono="camara" onEditar={() => navigation.navigate('WizardFotos')} vacio={!imagenes.length}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {imagenes.map((img, i) => <Image key={i} source={{ uri: img.asset.uri }} style={styles.miniatura} />)}
         </ScrollView>
       </Bloque>
 
-      <WizardPie paso={6} onSiguiente={publicar} textoSiguiente="🚀 Publicar" cargando={cargando} />
+      <WizardPie paso={6} onSiguiente={publicar} textoSiguiente="Publicar" iconoSiguiente="publicar" cargando={cargando} />
     </Pantalla>
   );
 }
 
-function Bloque({ titulo, children, onEditar, vacio }) {
+function Bloque({ titulo, icono, children, onEditar, vacio }) {
   return (
     <View style={styles.bloque}>
       <View style={styles.bloqueCabecera}>
-        <Text style={styles.bloqueTitulo}>{titulo}</Text>
+        <View style={styles.bloqueTituloFila}>
+          {icono ? <Icono nombre={icono} size={18} color={colors.primario} /> : null}
+          <Text style={styles.bloqueTitulo}>{t(titulo)}</Text>
+        </View>
         <Button titulo={vacio ? 'Agregar' : 'Editar'} variant="texto" onPress={onEditar} style={styles.editar} />
       </View>
-      {vacio ? <Text style={styles.secundario}>Sin contenido</Text> : children}
+      {vacio ? <Text style={styles.secundario}>{t('Sin contenido')}</Text> : children}
     </View>
   );
 }
@@ -102,7 +107,8 @@ function Bloque({ titulo, children, onEditar, vacio }) {
 const styles = StyleSheet.create({
   bloque: { backgroundColor: colors.superficie, borderWidth: 1, borderColor: colors.borde, borderRadius: 14, padding: 14, marginBottom: 12 },
   bloqueCabecera: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  bloqueTitulo: { color: colors.texto, fontWeight: '800', fontSize: 16 },
+  bloqueTituloFila: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
+  bloqueTitulo: { color: colors.texto, fontWeight: '800', fontSize: 16, flexShrink: 1 },
   editar: { minHeight: 0, paddingVertical: 0, paddingHorizontal: 0 },
   texto: { color: colors.texto, fontSize: 15 },
   secundario: { color: colors.textoSecundario, fontSize: 13 },

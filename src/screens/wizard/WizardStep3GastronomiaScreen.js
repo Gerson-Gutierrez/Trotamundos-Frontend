@@ -11,6 +11,8 @@ import WizardPie from '../../components/wizard/WizardPie';
 import { colors } from '../../constants/colors';
 import { useWizard } from '../../hooks/useWizard';
 import { usePrecargaLugares } from '../../hooks/usePrecargaLugares';
+import { t } from '../../i18n';
+import Icono, { TextoIcono } from '../../components/common/Icono';
 
 const restauranteVacio = { nombre: '', direccion: '', latitud: null, longitud: null, placeIdApi: null };
 
@@ -27,7 +29,7 @@ export default function WizardStep3GastronomiaScreen({ navigation }) {
   usePrecargaLugares('restaurante', borrador.ciudad?.nombre, borrador.pais?.codigoIso);
 
   const agregarRestaurante = () => {
-    if (!nuevo.nombre.trim()) return setError('Ingresá el nombre del restaurante.');
+    if (!nuevo.nombre.trim()) return setError(t('Ingresá el nombre del restaurante.'));
     setError('');
     setRestaurantes((r) => [...r, { ...nuevo, nombre: nuevo.nombre.trim() }]);
     setNuevo(restauranteVacio);
@@ -61,7 +63,7 @@ export default function WizardStep3GastronomiaScreen({ navigation }) {
 
   const guardar = () => {
     if (!reseña.trim()) {
-      return setError('Contanos sobre las comidas típicas de la zona o qué recomendás comer.');
+      return setError(t('Contanos sobre las comidas típicas de la zona o qué recomendás comer.'));
     }
 
     setError('');
@@ -96,26 +98,31 @@ export default function WizardStep3GastronomiaScreen({ navigation }) {
       {restaurantes.map((r, i) => (
         <View key={i} style={styles.restaurante}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.restauranteNombre}>🍽️ {r.nombre}</Text>
+            <TextoIcono icono="restaurante" color={colors.primario} style={styles.restauranteNombre}>{r.nombre}</TextoIcono>
             {r.direccion ? <Text style={styles.restauranteDireccion}>{r.direccion}</Text> : null}
-            {r.latitud != null && <Text style={styles.restauranteDireccion}>📍 ubicado en el mapa</Text>}
+            {r.latitud != null && (
+              <TextoIcono icono="ubicacion" size={13} style={styles.restauranteDireccion} contenedorStyle={styles.ubicado}>
+                {t('ubicado en el mapa')}
+              </TextoIcono>
+            )}
           </View>
-          <Pressable onPress={() => quitar(i)}>
-            <Text style={styles.quitar}>✕</Text>
+          <Pressable onPress={() => quitar(i)} hitSlop={8} accessibilityLabel={t('Quitar')}>
+            <Icono nombre="cerrar" size={20} color={colors.peligro} />
           </Pressable>
         </View>
       ))}
 
       {!agregando ? (
         <Button
-          titulo="+ Agregar restaurante"
+          titulo="Agregar restaurante"
+          icono="mas"
           variant="secundario"
           onPress={() => setAgregando(true)}
           style={styles.espacio}
         />
       ) : (
         <View style={styles.formulario}>
-          <Text style={styles.formularioTitulo}>Nuevo restaurante</Text>
+          <Text style={styles.formularioTitulo}>{t('Nuevo restaurante')}</Text>
           <BuscadorDireccion
             etiqueta="Buscar restaurante o dirección (opcional)"
             placeholder="Ej. La Parrilla de Don José, Las Heras 500…"
@@ -180,7 +187,7 @@ const styles = StyleSheet.create({
   },
   restauranteNombre: { color: colors.texto, fontWeight: '700' },
   restauranteDireccion: { color: colors.textoSecundario, fontSize: 12, marginTop: 2 },
-  quitar: { color: colors.peligro, fontSize: 18, paddingHorizontal: 8 },
+  ubicado: { marginTop: 2 },
   formulario: {
     backgroundColor: colors.superficie,
     borderWidth: 1,

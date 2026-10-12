@@ -6,6 +6,7 @@ import Button from '../../components/common/Button';
 import Mensaje from '../../components/common/Mensaje';
 import { authApi } from '../../api/authApi';
 import { mensajeError } from '../../utils/formatters';
+import { t } from '../../i18n';
 
 export default function RestablecerPasswordScreen({ navigation }) {
   const [token, setToken] = useState('');
@@ -16,9 +17,9 @@ export default function RestablecerPasswordScreen({ navigation }) {
   const [cargando, setCargando] = useState(false);
 
   const restablecer = async () => {
-    if (!token.trim()) return setError('Ingresá el código que recibiste por email.');
-    if (password.length < 8) return setError('La contraseña debe tener al menos 8 caracteres.');
-    if (password !== confirmar) return setError('Las contraseñas no coinciden.');
+    if (!token.trim()) return setError(t('Ingresá el código que recibiste por email.'));
+    if (password.length < 8) return setError(t('La contraseña debe tener al menos 8 caracteres.'));
+    if (password !== confirmar) return setError(t('Las contraseñas no coinciden.'));
     setError('');
     setCargando(true);
     try {

@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { colors } from '../../constants/colors';
 import { construirGlobeHtml } from './globeHtml';
+import { idiomaActual } from '../../i18n';
 
 /**
  * Globo 3D (Cesium) dentro de un WebView. Cesium es WebGL puro, por eso
@@ -20,7 +21,7 @@ const GlobeWebView = forwardRef(function GlobeWebView(
   ref
 ) {
   const webRef = useRef(null);
-  const html = useMemo(() => construirGlobeHtml({ isoInicial }), [isoInicial]);
+  const html = useMemo(() => construirGlobeHtml({ isoInicial, idioma: idiomaActual() }), [isoInicial]);
 
   useImperativeHandle(ref, () => ({
     seleccionarPais: (iso) => {

@@ -4,15 +4,17 @@ import Input from '../common/Input';
 import { colors } from '../../constants/colors';
 import { agenciasApi } from '../../api/agenciasApi';
 import { sinProtocolo } from '../../utils/formatters';
+import { t } from '../../i18n';
+import Icono, { TextoIcono } from '../common/Icono';
 
 const ESPERA_MS = 600;
 const MINIMO_CARACTERES = 3;
 
 // De dónde salió el resultado, para que el usuario sepa qué está eligiendo
 const FUENTES = {
-  web: { icono: '🔎', etiqueta: 'Web' },
-  mapa: { icono: '📍', etiqueta: 'Local' },
-  marca: { icono: '🏷️', etiqueta: 'Sitio oficial' },
+  web: { icono: 'buscar', etiqueta: 'Web' },
+  mapa: { icono: 'ubicacion', etiqueta: 'Local' },
+  marca: { icono: 'etiqueta', etiqueta: 'Sitio oficial' },
 };
 
 /**
@@ -42,11 +44,11 @@ export default function BuscadorAgencia({ valor, onCambioTexto, onSeleccion, cod
       if (control.signal.aborted) return;
       setResultados(lista);
       if (!lista.length) {
-        setAviso('No encontramos esa agencia en la web. Podés escribir su página más abajo.');
+        setAviso(t('No encontramos esa agencia en la web. Podés escribir su página más abajo.'));
       }
     } catch (e) {
       if (e.code === 'ERR_CANCELED' || e.name === 'CanceledError' || e.name === 'AbortError') return;
-      setAviso('No se pudo buscar en la web. Podés escribir el nombre y la página a mano.');
+      setAviso(t('No se pudo buscar en la web. Podés escribir el nombre y la página a mano.'));
     } finally {
       if (!control.signal.aborted) setBuscando(false);
     }
@@ -90,10 +92,10 @@ export default function BuscadorAgencia({ valor, onCambioTexto, onSeleccion, cod
       {buscando ? (
         <View style={styles.estado}>
           <ActivityIndicator size="small" color={colors.primario} />
-          <Text style={styles.estadoTexto}>Buscando la agencia en la web…</Text>
+          <Text style={styles.estadoTexto}>{t('Buscando la agencia en la web…')}</Text>
         </View>
       ) : (
-        <Text style={styles.ayuda}>Escribí el nombre y elegí la agencia: su página se completa sola.</Text>
+        <Text style={styles.ayuda}>{t('Escribí el nombre y elegí la agencia: su página se completa sola.')}</Text>
       )}
 
       {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
@@ -106,13 +108,13 @@ export default function BuscadorAgencia({ valor, onCambioTexto, onSeleccion, cod
             onPress={() => elegir(a)}
             style={({ pressed }) => [styles.resultado, pressed && styles.presionado]}
           >
-            <Text style={styles.icono}>{fuente.icono}</Text>
+            <Icono nombre={fuente.icono} size={20} color={colors.primario} />
             <View style={styles.textos}>
               <Text style={styles.nombre} numberOfLines={1}>{a.nombre}</Text>
-              <Text style={styles.url} numberOfLines={1}>🌐 {sinProtocolo(a.url)}</Text>
+              <TextoIcono icono="web" size={12} color={colors.primario} style={styles.url} numberOfLines={1}>{sinProtocolo(a.url)}</TextoIcono>
               {a.descripcion ? <Text style={styles.descripcion} numberOfLines={2}>{a.descripcion}</Text> : null}
             </View>
-            <Text style={styles.insignia}>{fuente.etiqueta}</Text>
+            <Text style={styles.insignia}>{t(fuente.etiqueta)}</Text>
           </Pressable>
         );
       })}
@@ -136,7 +138,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   presionado: { opacity: 0.7 },
-  icono: { fontSize: 18 },
   textos: { flex: 1 },
   nombre: { color: colors.texto, fontSize: 15, fontWeight: '700' },
   url: { color: colors.primario, fontSize: 12, marginTop: 2 },

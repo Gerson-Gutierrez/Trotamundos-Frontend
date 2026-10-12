@@ -6,6 +6,7 @@ import Mensaje from './Mensaje';
 import { colors } from '../../constants/colors';
 import { authApi } from '../../api/authApi';
 import { mensajeError } from '../../utils/formatters';
+import { t } from '../../i18n';
 
 // Pide la contraseña y da de baja la cuenta. Llama a onEliminada() cuando el servidor confirma.
 export default function ModalEliminarCuenta({ visible, onCerrar, onEliminada }) {
@@ -21,7 +22,7 @@ export default function ModalEliminarCuenta({ visible, onCerrar, onEliminada }) 
   };
 
   const eliminar = async () => {
-    if (!password) { setError('Ingresá tu contraseña para confirmar.'); return; }
+    if (!password) { setError(t('Ingresá tu contraseña para confirmar.')); return; }
     setError('');
     setCargando(true);
     try {
@@ -38,9 +39,9 @@ export default function ModalEliminarCuenta({ visible, onCerrar, onEliminada }) 
     <Modal visible={visible} transparent animationType="fade" onRequestClose={cerrar}>
       <KeyboardAvoidingView style={styles.fondo} behavior="padding">
         <View style={styles.caja}>
-          <Text style={styles.titulo}>Eliminar mi cuenta</Text>
+          <Text style={styles.titulo}>{t('Eliminar mi cuenta')}</Text>
           <Text style={styles.texto}>
-            Se borrarán tu perfil y todas tus publicaciones. Esta acción no se puede deshacer.
+            {t('Se borrarán tu perfil y todas tus publicaciones. Esta acción no se puede deshacer.')}
           </Text>
           <Mensaje texto={error} />
           <Input

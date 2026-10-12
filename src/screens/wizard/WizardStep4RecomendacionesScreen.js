@@ -11,6 +11,8 @@ import { colors } from '../../constants/colors';
 import { useWizard } from '../../hooks/useWizard';
 import { usePrecargaLugares } from '../../hooks/usePrecargaLugares';
 import { normalizarUrl, sinProtocolo } from '../../utils/formatters';
+import { t } from '../../i18n';
+import Icono, { TextoIcono } from '../../components/common/Icono';
 
 const agenciaVacia = { nombre: '', sitioWeb: '' };
 
@@ -35,7 +37,7 @@ export default function WizardStep4RecomendacionesScreen({ navigation }) {
   };
 
   const agregarAgencia = () => {
-    if (!nueva.nombre.trim()) return setError('Ingresá el nombre de la agencia.');
+    if (!nueva.nombre.trim()) return setError(t('Ingresá el nombre de la agencia.'));
     setError('');
     setAgencias((a) => [
       ...a,
@@ -53,7 +55,7 @@ export default function WizardStep4RecomendacionesScreen({ navigation }) {
 
   const guardar = () => {
     if (!contenido.trim()) {
-      return setError('Contanos sobre los lugares que recorriste o las actividades que hiciste.');
+      return setError(t('Contanos sobre los lugares que recorriste o las actividades que hiciste.'));
     }
 
     setError('');
@@ -86,36 +88,38 @@ export default function WizardStep4RecomendacionesScreen({ navigation }) {
         placeholder="Ej. Recomiendo el tour por las bodegas, salir temprano al Cerro de la Gloria, evitar el centro los domingos…"
       />
 
-      <Text style={styles.subtitulo}>Agencias de turismo</Text>
+      <Text style={styles.subtitulo}>{t('Agencias de turismo')}</Text>
 
       {agencias.map((a, i) => (
         <View key={i} style={styles.agencia}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.agenciaNombre}>🎫 {a.nombre}</Text>
+            <TextoIcono icono="agencia" color={colors.primario} style={styles.agenciaNombre}>{a.nombre}</TextoIcono>
             {a.sitioWeb ? (
-              <Text style={styles.agenciaWeb} numberOfLines={1}>
-                🌐 {sinProtocolo(a.sitioWeb)}
-              </Text>
+              <TextoIcono icono="web" size={13} color={colors.primario} style={styles.agenciaWeb} numberOfLines={1}
+                contenedorStyle={styles.agenciaFila}>
+                {sinProtocolo(a.sitioWeb)}
+              </TextoIcono>
             ) : (
-              <Text style={styles.agenciaDato}>Sin página web</Text>
+              <Text style={styles.agenciaDato}>{t('Sin página web')}</Text>
             )}
           </View>
-          <Pressable onPress={() => quitar(i)}>
-            <Text style={styles.quitar}>✕</Text>
+          <Pressable onPress={() => quitar(i)} hitSlop={8} accessibilityLabel={t('Quitar')}>
+            <Icono nombre="cerrar" size={20} color={colors.peligro} />
           </Pressable>
         </View>
       ))}
 
       {!agregando ? (
         <Button
-          titulo="+ Agregar agencia de turismo"
+          titulo="Agregar agencia de turismo"
+          icono="mas"
           variant="secundario"
           onPress={() => setAgregando(true)}
           style={styles.espacio}
         />
       ) : (
         <View style={styles.formulario}>
-          <Text style={styles.formularioTitulo}>Nueva agencia de turismo</Text>
+          <Text style={styles.formularioTitulo}>{t('Nueva agencia de turismo')}</Text>
 
           <BuscadorAgencia
             valor={nueva.nombre}
@@ -135,7 +139,7 @@ export default function WizardStep4RecomendacionesScreen({ navigation }) {
             keyboardType="url"
           />
           <Text style={styles.ayuda}>
-            Se completa sola al elegir una agencia de la lista. Si no aparece, escribila acá.
+            {t('Se completa sola al elegir una agencia de la lista. Si no aparece, escribila acá.')}
           </Text>
 
           <View style={styles.acciones}>
@@ -174,8 +178,8 @@ const styles = StyleSheet.create({
   },
   agenciaNombre: { color: colors.texto, fontWeight: '700' },
   agenciaDato: { color: colors.textoSecundario, fontSize: 12, marginTop: 2 },
-  agenciaWeb: { color: colors.primario, fontSize: 12, marginTop: 2 },
-  quitar: { color: colors.peligro, fontSize: 18, paddingHorizontal: 8 },
+  agenciaFila: { marginTop: 2 },
+  agenciaWeb: { color: colors.primario, fontSize: 12 },
   formulario: {
     backgroundColor: colors.superficie,
     borderWidth: 1,

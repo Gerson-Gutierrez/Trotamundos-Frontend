@@ -8,6 +8,7 @@ import Mensaje from '../../components/common/Mensaje';
 import { colors } from '../../constants/colors';
 import { superAdminApi } from '../../api/superAdminApi';
 import { mensajeError } from '../../utils/formatters';
+import { t } from '../../i18n';
 
 export default function InvitarCuentaScreen() {
   const [email, setEmail] = useState('');
@@ -17,13 +18,13 @@ export default function InvitarCuentaScreen() {
   const [cargando, setCargando] = useState(false);
 
   const invitar = async () => {
-    if (!email.trim()) return setError('Ingresá el email de la persona a invitar.');
+    if (!email.trim()) return setError(t('Ingresá el email de la persona a invitar.'));
     setError('');
     setExito('');
     setCargando(true);
     try {
       const r = await superAdminApi.invitar(email.trim(), esSuperAdmin);
-      setExito(r?.mensaje || 'Invitación enviada.');
+      setExito(t(r?.mensaje || 'Invitación enviada.'));
       setEmail('');
     } catch (e) {
       setError(mensajeError(e));
@@ -38,7 +39,7 @@ export default function InvitarCuentaScreen() {
       <Mensaje texto={error} />
       <Mensaje tipo="exito" texto={exito} />
 
-      <Text style={styles.etiqueta}>Rol de la nueva cuenta</Text>
+      <Text style={styles.etiqueta}>{t('Rol de la nueva cuenta')}</Text>
       <View style={styles.roles}>
         <Button titulo="Administrador" variant={esSuperAdmin ? 'secundario' : 'primario'} onPress={() => setEsSuperAdmin(false)} style={styles.rol} />
         <Button titulo="Superadministrador" variant={esSuperAdmin ? 'primario' : 'secundario'} onPress={() => setEsSuperAdmin(true)} style={styles.rol} />

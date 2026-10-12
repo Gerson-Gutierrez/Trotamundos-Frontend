@@ -7,6 +7,9 @@ import Mensaje from '../../components/common/Mensaje';
 import { colors } from '../../constants/colors';
 import { useAuth } from '../../hooks/useAuth';
 import { mensajeError } from '../../utils/formatters';
+import { t } from '../../i18n';
+import Icono from '../../components/common/Icono';
+import BotonIdioma from '../../components/common/BotonIdioma';
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
@@ -16,7 +19,7 @@ export default function LoginScreen({ navigation }) {
   const [cargando, setCargando] = useState(false);
 
   const ingresar = async () => {
-    if (!email.trim() || !password) return setError('Completá email y contraseña.');
+    if (!email.trim() || !password) return setError(t('Completá email y contraseña.'));
     setError('');
     setCargando(true);
     try {
@@ -30,10 +33,14 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <Pantalla contenidoStyle={styles.contenido}>
+      <View style={styles.barraSuperior}>
+        <BotonIdioma />
+      </View>
+
       <View style={styles.logo}>
-        <Text style={styles.emoji}>🌍</Text>
+        <Icono nombre="mundo" size={72} color={colors.primario} />
         <Text style={styles.nombre}>Trotamundos</Text>
-        <Text style={styles.lema}>Compartí tus viajes con el mundo</Text>
+        <Text style={styles.lema}>{t('Compartí tus viajes con el mundo')}</Text>
       </View>
 
       <Mensaje texto={error} />
@@ -47,7 +54,7 @@ export default function LoginScreen({ navigation }) {
       <Button titulo="Olvidé mi contraseña" variant="texto" onPress={() => navigation.navigate('OlvidoPassword')} />
 
       <View style={styles.pie}>
-        <Text style={styles.pieTexto}>¿No tenés cuenta?</Text>
+        <Text style={styles.pieTexto}>{t('¿No tenés cuenta?')}</Text>
         <Button titulo="Crear cuenta" variant="secundario" onPress={() => navigation.navigate('Register')} />
       </View>
     </Pantalla>
@@ -55,9 +62,9 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  contenido: { flexGrow: 1, justifyContent: 'center' },
-  logo: { alignItems: 'center', marginBottom: 32 },
-  emoji: { fontSize: 64 },
+  contenido: { flexGrow: 1 },
+  barraSuperior: { alignSelf: 'stretch', flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 8 },
+  logo: { alignItems: 'center', marginTop: 24, marginBottom: 32 },
   nombre: { color: colors.primario, fontSize: 34, fontWeight: '900', marginTop: 8 },
   lema: { color: colors.textoSecundario, marginTop: 4 },
   pie: { marginTop: 28, gap: 10, alignItems: 'center' },

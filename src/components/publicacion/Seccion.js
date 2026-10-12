@@ -1,12 +1,17 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../constants/colors';
+import { t } from '../../i18n';
+import Icono from '../common/Icono';
 
-// Bloque visual reutilizado por las secciones del detalle
-export default function Seccion({ titulo, children, style }) {
+// Bloque visual reutilizado por las secciones del detalle. `icono`: nombre de un icono de Icono.js
+export default function Seccion({ titulo, icono, children, style }) {
   return (
     <View style={[styles.seccion, style]}>
-      <Text style={styles.titulo}>{titulo}</Text>
+      <View style={styles.cabecera}>
+        {icono ? <Icono nombre={icono} size={22} color={colors.primario} /> : null}
+        <Text style={styles.titulo}>{t(titulo)}</Text>
+      </View>
       {children}
     </View>
   );
@@ -36,5 +41,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borde,
   },
-  titulo: { color: colors.texto, fontSize: 18, fontWeight: '800', marginBottom: 10 },
+  cabecera: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  titulo: { color: colors.texto, fontSize: 18, fontWeight: '800', flexShrink: 1 },
 });

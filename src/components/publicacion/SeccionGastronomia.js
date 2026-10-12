@@ -9,7 +9,7 @@ export default function SeccionGastronomia({ gastronomia }) {
   const restaurantes = gastronomia.restaurantes || [];
 
   return (
-    <Seccion titulo="🍽️ Restaurantes y comidas">
+    <Seccion titulo="Restaurantes y comidas" icono="restaurante">
       {restaurantes.map((r, i) => (
         <View key={i} style={s.item}>
           <Text style={s.subtitulo}>{r.nombre}</Text>

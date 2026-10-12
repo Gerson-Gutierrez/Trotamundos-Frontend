@@ -8,11 +8,12 @@ import SelectorImagen from '../../components/common/SelectorImagen';
 import SelectorPais from '../../components/common/SelectorPais';
 import { archivosApi } from '../../api/archivosApi';
 import { useAuth } from '../../hooks/useAuth';
-import { mensajeError } from '../../utils/formatters';
+import { mensajeError, normalizarInstagram } from '../../utils/formatters';
+import { t } from '../../i18n';
 
 export default function RegisterScreen() {
   const { registro } = useAuth();
-  const [form, setForm] = useState({ nombre: '', apellido: '', email: '', password: '', confirmar: '' });
+  const [form, setForm] = useState({ nombre: '', apellido: '', email: '', password: '', confirmar: '', instagram: '' });
   const [nacionalidad, setNacionalidad] = useState(null);
   const [foto, setFoto] = useState(null); // asset local
   const [error, setError] = useState('');
@@ -26,12 +27,13 @@ export default function RegisterScreen() {
     if (form.password.length < 8) return 'La contraseña debe tener al menos 8 caracteres.';
     if (form.password !== form.confirmar) return 'Las contraseñas no coinciden.';
     if (!nacionalidad) return 'Elegí tu nacionalidad.';
-    return '';
+    // La red social es opcional, pero si se escribe tiene que ser válida
+    return normalizarInstagram(form.instagram).error || '';
   };
 
   const registrarse = async () => {
     const msg = validar();
-    if (msg) return setError(msg);
+    if (msg) return setError(t(msg));
     setError('');
     setCargando(true);
     try {
@@ -46,6 +48,7 @@ export default function RegisterScreen() {
         password: form.password,
         nacionalidad: nacionalidad.nombre,
         fotoPerfilUrl,
+        instagram: normalizarInstagram(form.instagram).usuario,
       });
       // Al guardarse la sesión, AppNavigator cambia solo a la app
     } catch (e) {
@@ -67,6 +70,8 @@ export default function RegisterScreen() {
       <Input etiqueta="Email" value={form.email} onChangeText={cambiar('email')} placeholder="tu@email.com"
         autoCapitalize="none" keyboardType="email-address" />
       <SelectorPais etiqueta="Nacionalidad" valor={nacionalidad} onSeleccion={setNacionalidad} placeholder="Elegí tu país" />
+      <Input etiqueta="Instagram (opcional)" value={form.instagram} onChangeText={cambiar('instagram')} placeholder="@tu_usuario"
+        autoCapitalize="none" autoCorrect={false} />
       <Input etiqueta="Contraseña" value={form.password} onChangeText={cambiar('password')} placeholder="Mínimo 8 caracteres" secureTextEntry />
       <Input etiqueta="Confirmar contraseña" value={form.confirmar} onChangeText={cambiar('confirmar')} placeholder="Repetí la contraseña" secureTextEntry />
 

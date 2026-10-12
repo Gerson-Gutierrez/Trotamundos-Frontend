@@ -1,11 +1,13 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../constants/colors';
-import { formatearFechaCorta, urlBandera } from '../../utils/formatters';
+import { formatearFechaCorta, nombrePais, urlBandera } from '../../utils/formatters';
 
-// Fila mínima del feed del inicio: bandera, país, ciudad y fecha. El contenido completo se ve al abrirla.
-export default function TarjetaPublicacionCompacta({ publicacion, codigoIso, onPress }) {
+// Fila mínima de una publicación (inicio y favoritos): bandera, país, ciudad y, si se pide, la fecha.
+// El contenido completo se ve al abrirla.
+export default function TarjetaPublicacionCompacta({ publicacion, codigoIso, onPress, mostrarFecha = true }) {
   const bandera = urlBandera(codigoIso);
+  const pais = nombrePais(codigoIso, publicacion.nombrePais);
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.fila, pressed && styles.presionada]}>
       {bandera ? (
@@ -14,10 +16,10 @@ export default function TarjetaPublicacionCompacta({ publicacion, codigoIso, onP
         <View style={[styles.bandera, styles.banderaVacia]} />
       )}
       <Text style={styles.pais} numberOfLines={1}>
-        {publicacion.nombrePais}
+        {pais}
         {publicacion.nombreCiudad ? <Text style={styles.ciudad}>{`  ${publicacion.nombreCiudad}`}</Text> : null}
       </Text>
-      <Text style={styles.fecha}>{formatearFechaCorta(publicacion.fechaPublicacion)}</Text>
+      {mostrarFecha ? <Text style={styles.fecha}>{formatearFechaCorta(publicacion.fechaPublicacion)}</Text> : null}
     </Pressable>
   );
 }

@@ -7,8 +7,9 @@ import { lugaresApi } from '../../api/lugaresApi';
 // La geocodificación inversa sigue sirviendo para el botón "Estoy acá"
 import { geocodingApi } from '../../api/geocodingApi';
 import { sinProtocolo } from '../../utils/formatters';
+import { t } from '../../i18n';
+import Icono, { TextoIcono } from '../common/Icono';
 
-const ICONOS = { alojamiento: '🏨', restaurante: '🍽️', agencia: '🎫' };
 const ESPERA_MS = 350;
 const MINIMO_CARACTERES = 2;
 
@@ -56,10 +57,10 @@ export default function BuscadorDireccion({
       });
       if (control.signal.aborted) return;
       setResultados(lista);
-      if (!lista.length) setAviso('No encontramos ese lugar. Probá con otro nombre o marcá el punto en el mapa.');
+      if (!lista.length) setAviso(t('No encontramos ese lugar. Probá con otro nombre o marcá el punto en el mapa.'));
     } catch (e) {
       if (e.code === 'ERR_CANCELED' || e.name === 'CanceledError' || e.name === 'AbortError') return;
-      setAviso('No se pudo buscar. Podés escribir el nombre y marcar el punto en el mapa.');
+      setAviso(t('No se pudo buscar. Podés escribir el nombre y marcar el punto en el mapa.'));
     } finally {
       if (!control.signal.aborted) setBuscando(false);
     }
@@ -96,18 +97,18 @@ export default function BuscadorDireccion({
     try {
       const permiso = await Location.requestForegroundPermissionsAsync();
       if (!permiso.granted) {
-        setAviso('Necesitamos permiso de ubicación para detectar dónde estás.');
+        setAviso(t('Necesitamos permiso de ubicación para detectar dónde estás.'));
         return;
       }
       const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const lugar = await geocodingApi.inverso(pos.coords.latitude, pos.coords.longitude);
       if (!lugar) {
-        setAviso('No pudimos identificar tu ubicación actual.');
+        setAviso(t('No pudimos identificar tu ubicación actual.'));
         return;
       }
       elegir({ ...lugar, latitud: pos.coords.latitude, longitud: pos.coords.longitude });
     } catch {
-      setAviso('No se pudo obtener tu ubicación.');
+      setAviso(t('No se pudo obtener tu ubicación.'));
     } finally {
       setUbicando(false);
     }
@@ -130,15 +131,19 @@ export default function BuscadorDireccion({
         {buscando ? (
           <View style={styles.estado}>
             <ActivityIndicator size="small" color={colors.primario} />
-            <Text style={styles.estadoTexto}>Buscando lugares…</Text>
+            <Text style={styles.estadoTexto}>{t('Buscando lugares…')}</Text>
           </View>
         ) : (
-          <Text style={styles.ayuda}>Escribí al menos {MINIMO_CARACTERES} letras y elegí de la lista</Text>
+          <Text style={styles.ayuda}>{t('Escribí al menos {n} letras y elegí de la lista', { n: MINIMO_CARACTERES })}</Text>
         )}
 
         {permitirUbicacionActual && (
           <Pressable onPress={usarUbicacionActual} disabled={ubicando} style={styles.gps}>
-            <Text style={styles.gpsTexto}>{ubicando ? 'Ubicando…' : '📡 Estoy acá'}</Text>
+            {ubicando ? (
+              <Text style={styles.gpsTexto}>{t('Ubicando…')}</Text>
+            ) : (
+              <TextoIcono icono="gps" size={14} color={colors.primario} style={styles.gpsTexto}>{t('Estoy acá')}</TextoIcono>
+            )}
           </Pressable>
         )}
       </View>
@@ -151,14 +156,17 @@ export default function BuscadorDireccion({
           onPress={() => elegir(lugar)}
           style={({ pressed }) => [styles.resultado, pressed && styles.resultadoPresionado]}
         >
-          <Text style={styles.icono}>{ICONOS[lugar.categoria] || '📍'}</Text>
+          <Icono nombre={lugar.categoria === 'alojamiento' || lugar.categoria === 'restaurante' || lugar.categoria === 'agencia' ? lugar.categoria : 'ubicacion'}
+            size={22} color={colors.primario} />
           <View style={styles.resultadoTextos}>
             <Text style={styles.nombre} numberOfLines={1}>{lugar.nombre}</Text>
             {lugar.direccion ? <Text style={styles.direccion} numberOfLines={2}>{lugar.direccion}</Text> : null}
-            {lugar.sitioWeb ? <Text style={styles.web} numberOfLines={1}>🌐 {sinProtocolo(lugar.sitioWeb)}</Text> : null}
+            {lugar.sitioWeb ? (
+              <TextoIcono icono="web" size={12} color={colors.primario} style={styles.web} numberOfLines={1}>{sinProtocolo(lugar.sitioWeb)}</TextoIcono>
+            ) : null}
           </View>
           <Text style={[styles.insignia, lugar.fuente === 'poi' && styles.insigniaDestacada]}>
-            {lugar.etiqueta}
+            {t(lugar.etiqueta)}
           </Text>
         </Pressable>
       ))}
@@ -185,7 +193,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   resultadoPresionado: { opacity: 0.7 },
-  icono: { fontSize: 20 },
   resultadoTextos: { flex: 1 },
   nombre: { color: colors.texto, fontSize: 15, fontWeight: '700' },
   direccion: { color: colors.textoSecundario, fontSize: 12, marginTop: 2 },

@@ -8,6 +8,8 @@ import { usuariosApi } from '../../api/usuariosApi';
 import { useAuth } from '../../hooks/useAuth';
 import { formatearFecha, iniciales, mensajeError, urlImagen } from '../../utils/formatters';
 import { avisar, confirmar } from '../../utils/dialogos';
+import { t } from '../../i18n';
+import Icono from '../../components/common/Icono';
 
 export default function UsuariosAdminScreen() {
   const { usuario: yo } = useAuth();
@@ -21,8 +23,10 @@ export default function UsuariosAdminScreen() {
   useFocusEffect(useCallback(() => { cargar(); }, [cargar]));
 
   const alternarBloqueo = async (u) => {
-    const accion = u.bloqueado ? 'desbloquear' : 'bloquear';
-    if (!(await confirmar('Confirmar', `¿Querés ${accion} a ${u.nombre} ${u.apellido}?`, { textoOk: 'Sí', destructivo: !u.bloqueado }))) return;
+    const mensaje = u.bloqueado
+      ? t('¿Querés desbloquear a {nombre}?', { nombre: `${u.nombre} ${u.apellido}` })
+      : t('¿Querés bloquear a {nombre}?', { nombre: `${u.nombre} ${u.apellido}` });
+    if (!(await confirmar('Confirmar', mensaje, { textoOk: 'Sí', destructivo: !u.bloqueado }))) return;
     try {
       await (u.bloqueado ? usuariosApi.desbloquear(u.usuarioId) : usuariosApi.bloquear(u.usuarioId));
       cargar();
@@ -32,7 +36,7 @@ export default function UsuariosAdminScreen() {
   };
 
   const eliminar = async (u) => {
-    if (!(await confirmar('Eliminar usuario', `¿Eliminar a ${u.nombre} ${u.apellido}? Se borrarán también todas sus publicaciones. No se puede deshacer.`, { textoOk: 'Eliminar', destructivo: true }))) return;
+    if (!(await confirmar('Eliminar usuario', t('¿Eliminar a {nombre}? Se borrarán también todas sus publicaciones. No se puede deshacer.', { nombre: `${u.nombre} ${u.apellido}` }), { textoOk: 'Eliminar', destructivo: true }))) return;
     try {
       await usuariosApi.eliminar(u.usuarioId);
       cargar();
@@ -58,9 +62,13 @@ export default function UsuariosAdminScreen() {
               <View style={[styles.avatar, styles.avatarVacio]}><Text style={styles.iniciales}>{iniciales(`${u.nombre} ${u.apellido}`)}</Text></View>
             )}
             <View style={styles.info}>
-              <Text style={styles.nombre}>{u.nombre} {u.apellido} {u.esAdmin ? '🛡️' : ''}{u.bloqueado ? ' 🚫' : ''}</Text>
+              <View style={styles.nombreFila}>
+                <Text style={styles.nombre}>{u.nombre} {u.apellido}</Text>
+                {u.esAdmin ? <Icono nombre="admin" size={16} color={colors.primario} /> : null}
+                {u.bloqueado ? <Icono nombre="bloqueado" size={16} color={colors.peligro} /> : null}
+              </View>
               <Text style={styles.dato}>{u.email}</Text>
-              <Text style={styles.dato}>{u.nacionalidad} · desde {formatearFecha(u.fechaRegistro)}</Text>
+              <Text style={styles.dato}>{t('{pais} · desde {fecha}', { pais: u.nacionalidad, fecha: formatearFecha(u.fechaRegistro) })}</Text>
             </View>
           </View>
           {u.usuarioId !== yo?.usuarioId && (
@@ -87,7 +95,8 @@ const styles = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.superficieClara, flexShrink: 0 },
   avatarVacio: { alignItems: 'center', justifyContent: 'center' },
   iniciales: { color: colors.primario, fontWeight: '800' },
-  nombre: { color: colors.texto, fontWeight: '700', fontSize: 15 },
+  nombreFila: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  nombre: { color: colors.texto, fontWeight: '700', fontSize: 15, flexShrink: 1 },
   dato: { color: colors.textoSecundario, fontSize: 12 },
   acciones: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
   boton: { flexGrow: 1, flexBasis: 130, minHeight: 40, paddingVertical: 8 },

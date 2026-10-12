@@ -1,9 +1,11 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../constants/colors';
-import { formatearFecha, iniciales, urlImagen } from '../../utils/formatters';
+import { t } from '../../i18n';
+import { formatearFecha, iniciales, nombrePais, urlImagen } from '../../utils/formatters';
+import Icono, { TextoIcono } from '../common/Icono';
 
-// Resumen de una publicación para el listado del inicio y del perfil.
+// Resumen de una publicación para el listado del perfil.
 export default function TarjetaPublicacion({ publicacion, onPress }) {
   const p = publicacion;
   const resumen =
@@ -11,20 +13,22 @@ export default function TarjetaPublicacion({ publicacion, onPress }) {
     p.alojamiento?.experiencia ||
     p.experienciaGastronomica?.reseñaGeneral ||
     '';
+  const cantidadAgencias = p.recomendacion?.agencias?.length || 0;
 
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tarjeta, pressed && styles.presionada]}>
       <View style={styles.cuerpo}>
-        <Text style={styles.lugar} numberOfLines={1}>
-          📍 {p.nombreCiudad}, {p.nombrePais}
-        </Text>
+        <TextoIcono icono="ubicacion" color={colors.primario} style={styles.lugar} numberOfLines={1}
+          contenedorStyle={styles.lugarFila}>
+          {p.nombreCiudad}, {nombrePais(p.codigoIsoPais, p.nombrePais)}
+        </TextoIcono>
 
         <View style={styles.etiquetas}>
-          {p.alojamiento && <Etiqueta texto="🏨 Alojamiento" />}
-          {p.experienciaGastronomica && <Etiqueta texto="🍽️ Comidas" />}
-          {(p.recomendacion?.contenido || p.recomendacion?.agencias?.length > 0) && <Etiqueta texto="🧭 Recomendaciones" />}
-          {p.recomendacion?.agencias?.length > 0 && <Etiqueta texto={`🎫 ${p.recomendacion.agencias.length}`} />}
-          {p.imagenes?.length > 0 && <Etiqueta texto={`📷 ${p.imagenes.length}`} />}
+          {p.alojamiento && <Etiqueta icono="alojamiento" texto={t('Alojamiento')} />}
+          {p.experienciaGastronomica && <Etiqueta icono="restaurante" texto={t('Comidas')} />}
+          {(p.recomendacion?.contenido || cantidadAgencias > 0) && <Etiqueta icono="recomendaciones" texto={t('Recomendaciones')} />}
+          {cantidadAgencias > 0 && <Etiqueta icono="agencia" texto={String(cantidadAgencias)} />}
+          {p.imagenes?.length > 0 && <Etiqueta icono="camara" texto={String(p.imagenes.length)} />}
         </View>
 
         {resumen ? <Text style={styles.resumen} numberOfLines={2}>{resumen}</Text> : null}
@@ -45,9 +49,10 @@ export default function TarjetaPublicacion({ publicacion, onPress }) {
   );
 }
 
-function Etiqueta({ texto }) {
+function Etiqueta({ icono, texto }) {
   return (
     <View style={styles.etiqueta}>
+      <Icono nombre={icono} size={14} color={colors.textoSecundario} />
       <Text style={styles.etiquetaTexto}>{texto}</Text>
     </View>
   );
@@ -64,9 +69,10 @@ const styles = StyleSheet.create({
   },
   presionada: { opacity: 0.85 },
   cuerpo: { padding: 14 },
-  lugar: { color: colors.primario, fontWeight: '700', fontSize: 15, marginBottom: 8 },
+  lugarFila: { marginBottom: 8 },
+  lugar: { color: colors.primario, fontWeight: '700', fontSize: 15 },
   etiquetas: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-  etiqueta: { backgroundColor: colors.superficieClara, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  etiqueta: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: colors.superficieClara, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   etiquetaTexto: { color: colors.textoSecundario, fontSize: 12 },
   resumen: { color: colors.texto, fontSize: 14, lineHeight: 20, marginBottom: 10 },
   autor: { flexDirection: 'row', alignItems: 'center', gap: 8 },

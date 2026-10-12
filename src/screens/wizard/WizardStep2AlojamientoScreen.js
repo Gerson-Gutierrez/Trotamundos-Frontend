@@ -10,6 +10,8 @@ import WizardPie from '../../components/wizard/WizardPie';
 import { colors } from '../../constants/colors';
 import { useWizard } from '../../hooks/useWizard';
 import { usePrecargaLugares } from '../../hooks/usePrecargaLugares';
+import { t } from '../../i18n';
+import { TextoIcono } from '../../components/common/Icono';
 
 // Paso 2: alojamiento (hostel/hotel/departamento) marcado en el mapa + experiencia.
 export default function WizardStep2AlojamientoScreen({ navigation }) {
@@ -63,12 +65,12 @@ export default function WizardStep2AlojamientoScreen({ navigation }) {
 
     // Si no hay dirección cargada, exigimos obligatoriamente el nombre
     if (!tieneDireccion && !tieneNombre) {
-      return setError('Ingresá el nombre del alojamiento si no elegiste una dirección.');
+      return setError(t('Ingresá el nombre del alojamiento si no elegiste una dirección.'));
     }
 
     // Experiencia sigue siendo obligatoria siempre
     if (!form.experiencia.trim()) {
-      return setError('Contanos tu experiencia en el alojamiento.');
+      return setError(t('Contanos tu experiencia en el alojamiento.'));
     }
 
     actualizar({
@@ -85,7 +87,7 @@ export default function WizardStep2AlojamientoScreen({ navigation }) {
   return (
     <Pantalla>
       <Titulo
-        subtitulo={`¿Dónde te alojaste en ${borrador.ciudad?.nombre}? Buscá el hotel, hostel o departamento por su nombre, o escribí la dirección. También podés tocar el mapa para ajustar el pin.`}
+        subtitulo={t('¿Dónde te alojaste en {ciudad}? Buscá el hotel, hostel o departamento por su nombre, o escribí la dirección. También podés tocar el mapa para ajustar el pin.', { ciudad: borrador.ciudad?.nombre })}
       >
         Alojamiento
       </Titulo>
@@ -117,11 +119,13 @@ export default function WizardStep2AlojamientoScreen({ navigation }) {
           titulo={form.nombreHostelHotel}
           onCambio={({ latitud, longitud }) => setForm((f) => ({ ...f, latitud, longitud }))}
         />
-        <Text style={styles.ayuda}>
-          {tieneUbicacion
-            ? `📍 ${form.latitud.toFixed(5)}, ${form.longitud.toFixed(5)}`
-            : 'Tocá el mapa para marcar el punto manualmente'}
-        </Text>
+        {tieneUbicacion ? (
+          <TextoIcono icono="ubicacion" size={14} style={styles.ayuda} contenedorStyle={styles.ayudaFila}>
+            {`${Number(form.latitud).toFixed(5)}, ${Number(form.longitud).toFixed(5)}`}
+          </TextoIcono>
+        ) : (
+          <Text style={styles.ayuda}>{t('Tocá el mapa para marcar el punto manualmente')}</Text>
+        )}
       </View>
 
       <Input
@@ -139,5 +143,6 @@ export default function WizardStep2AlojamientoScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   mapa: { marginBottom: 14 },
-  ayuda: { color: colors.textoSecundario, fontSize: 12, marginTop: 6 },
+  ayudaFila: { marginTop: 6 },
+  ayuda: { color: colors.textoSecundario, fontSize: 12 },
 });

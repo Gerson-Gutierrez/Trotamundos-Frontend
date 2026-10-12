@@ -1,13 +1,14 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../constants/colors';
+import { t } from '../../i18n';
 
 // tipo: 'error' | 'exito' | 'info'
 export default function Mensaje({ texto, tipo = 'error', style }) {
   if (!texto) return null;
   return (
     <View style={[styles.base, styles[tipo], style]}>
-      <Text style={styles.texto}>{texto}</Text>
+      <Text style={styles.texto}>{t(texto)}</Text>
     </View>
   );
 }

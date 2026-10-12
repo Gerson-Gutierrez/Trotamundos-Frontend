@@ -11,7 +11,8 @@ import { colors } from '../../constants/colors';
 import { mapasApi } from '../../api/mapasApi';
 import { usePaises } from '../../hooks/usePaises';
 import { usePublicaciones } from '../../hooks/usePublicaciones';
-import { mensajeError } from '../../utils/formatters';
+import { mensajeError, nombrePais } from '../../utils/formatters';
+import { t } from '../../i18n';
 
 export default function HomeScreen({ navigation, route }) {
   const globoRef = useRef(null);
@@ -36,7 +37,7 @@ export default function HomeScreen({ navigation, route }) {
     try {
       return await mapasApi.paisPorIso(iso);
     } catch {
-      setErrorGlobo(`"${nombre}" todavía no está disponible en Trotamundos.`);
+      setErrorGlobo(t('"{pais}" todavía no está disponible en Trotamundos.', { pais: nombre }));
       return null;
     }
   }, [porIso]);
@@ -85,7 +86,7 @@ export default function HomeScreen({ navigation, route }) {
       porId[p.paisId] = p.codigoIso;
       porNombre[p.nombre?.toLowerCase()] = p.codigoIso;
     }
-    return (pub) => pub.codigoIso || porId[pub.paisId] || porNombre[pub.nombrePais?.toLowerCase()] || null;
+    return (pub) => pub.codigoIsoPais || pub.codigoIso || porId[pub.paisId] || porNombre[pub.nombrePais?.toLowerCase()] || null;
   }, [paises]);
 
   const cabecera = (
@@ -108,11 +109,11 @@ export default function HomeScreen({ navigation, route }) {
           <SelectorCiudad
             etiqueta={null}
             paisId={pais.paisId}
-            paisNombre={pais.nombre}
+            paisNombre={nombrePais(pais.codigoIso, pais.nombre)}
             valor={ciudad}
             onSeleccion={setCiudad}
             placeholder="Todas las ciudades"
-            soloConPublicaciones
+            permitirTodas
           />
         ) : (
           <SelectorPais
@@ -125,7 +126,9 @@ export default function HomeScreen({ navigation, route }) {
       </View>
 
       <Text style={styles.tituloLista}>
-        {pais ? `Publicaciones en ${ciudad ? ciudad.nombre : pais.nombre}` : 'Últimas publicaciones'}
+        {pais
+          ? t('Publicaciones en {lugar}', { lugar: ciudad ? ciudad.nombre : nombrePais(pais.codigoIso, pais.nombre) })
+          : t('Últimas publicaciones')}
       </Text>
       {error && <Mensaje texto={mensajeError(error)} style={styles.margenLateral} />}
     </View>
@@ -143,8 +146,8 @@ export default function HomeScreen({ navigation, route }) {
           cargando ? null : (
             <Text style={styles.vacio}>
               {pais
-                ? `Todavía nadie publicó sobre ${ciudad ? ciudad.nombre : pais.nombre}. ¡Podés ser el primero!`
-                : 'No hay publicaciones todavía. ¡Sé el primero en contar tu viaje!'}
+                ? t('Todavía nadie publicó sobre {lugar}. ¡Podés ser el primero!', { lugar: ciudad ? ciudad.nombre : nombrePais(pais.codigoIso, pais.nombre) })
+                : t('No hay publicaciones todavía. ¡Sé el primero en contar tu viaje!')}
             </Text>
           )
         }

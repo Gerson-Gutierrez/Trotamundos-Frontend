@@ -29,7 +29,7 @@ const GEOJSON_URL =
  * Mensajes app -> globo:
  *   window.seleccionarPais(iso)  |  postMessage({ type:'seleccionarPais', iso })
  */
-export function construirGlobeHtml({ isoInicial = '' } = {}) {
+export function construirGlobeHtml({ isoInicial = '', idioma = 'es' } = {}) {
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -71,6 +71,8 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
 (function () {
   var TOKEN = ${JSON.stringify(CESIUM_ION_TOKEN)};
   var ISO_INICIAL = ${JSON.stringify(isoInicial)};
+  // Natural Earth trae el nombre de cada país en varios idiomas (NAME_EN, NAME_ES, NAME_PT, NAME_FR…)
+  var CLAVE_NOMBRE = 'NAME_' + ${JSON.stringify(String(idioma).toUpperCase())};
   var GEOJSON = ${JSON.stringify(GEOJSON_URL)};
   var DENSIDAD = Math.min(2, window.devicePixelRatio || 1); // píxeles físicos por píxel CSS al renderizar
   var IMAGENES_ESRI = 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer';
@@ -277,7 +279,7 @@ export function construirGlobeHtml({ isoInicial = '' } = {}) {
     return null;
   }
   function nombreDe(p) {
-    return p.NAME_ES || p.NAME_LONG || p.NAME || p.ADMIN || '';
+    return p[CLAVE_NOMBRE] || p.NAME_ES || p.NAME_LONG || p.NAME || p.ADMIN || '';
   }
 
   function bboxDe(poligonos) {

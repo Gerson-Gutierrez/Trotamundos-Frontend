@@ -8,6 +8,7 @@ import Button from '../../components/common/Button';
 import Mensaje from '../../components/common/Mensaje';
 import { authApi } from '../../api/authApi';
 import { mensajeError } from '../../utils/formatters';
+import { t } from '../../i18n';
 
 export default function OlvidoPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ export default function OlvidoPasswordScreen({ navigation }) {
   const [cargando, setCargando] = useState(false);
 
   const enviar = async () => {
-    if (!email.trim()) return setError('Ingresá tu email.');
+    if (!email.trim()) return setError(t('Ingresá tu email.'));
     setError('');
     setCargando(true);
     try {
@@ -37,7 +38,7 @@ export default function OlvidoPasswordScreen({ navigation }) {
 
       <Mensaje texto={error} />
       <Text style={styles.nota}>
-        Si tu cuenta es de administrador, la contraseña la restablece un superadministrador.
+        {t('Si tu cuenta es de administrador, la contraseña la restablece un superadministrador.')}
       </Text>
       {enviado && (
         <Mensaje tipo="exito" texto="Si el correo está registrado, vas a recibir un código. Revisá tu bandeja de entrada." />
