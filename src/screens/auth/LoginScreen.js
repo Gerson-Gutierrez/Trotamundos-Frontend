@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import Pantalla from '../../components/common/Pantalla';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
@@ -8,7 +8,6 @@ import { colors } from '../../constants/colors';
 import { useAuth } from '../../hooks/useAuth';
 import { mensajeError } from '../../utils/formatters';
 import { t } from '../../i18n';
-import Icono from '../../components/common/Icono';
 import BotonIdioma from '../../components/common/BotonIdioma';
 
 export default function LoginScreen({ navigation }) {
@@ -38,7 +37,7 @@ export default function LoginScreen({ navigation }) {
       </View>
 
       <View style={styles.logo}>
-        <Icono nombre="mundo" size={72} color={colors.primario} />
+        <Image source={require('../../../assets/logo.png')} style={styles.logoImagen} resizeMode="contain" />
         <Text style={styles.nombre}>Trotamundos</Text>
         <Text style={styles.lema}>{t('Compartí tus viajes con el mundo')}</Text>
       </View>
@@ -64,8 +63,9 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   contenido: { flexGrow: 1 },
   barraSuperior: { alignSelf: 'stretch', flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 8 },
-  logo: { alignItems: 'center', marginTop: 24, marginBottom: 32 },
-  nombre: { color: colors.primario, fontSize: 34, fontWeight: '900', marginTop: 8 },
+  logo: { alignItems: 'center', marginBottom: 28 },
+  logoImagen: { width: 220, height: 220 },
+  nombre: { color: colors.primario, fontSize: 34, fontWeight: '900', marginTop: 4 },
   lema: { color: colors.textoSecundario, marginTop: 4 },
   pie: { marginTop: 28, gap: 10, alignItems: 'center' },
   pieTexto: { color: colors.textoSecundario },
