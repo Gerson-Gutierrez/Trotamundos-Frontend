@@ -19,6 +19,8 @@ export default {
   "Cancelar": "Annuler",
   "Eliminar cuenta": "Supprimer le compte",
   "Contraseña": "Mot de passe",
+  "Mostrar contraseña": "Afficher le mot de passe",
+  "Ocultar contraseña": "Masquer le mot de passe",
   "Tu contraseña actual": "Votre mot de passe actuel",
   "Cuenta eliminada": "Compte supprimé",
   "Tu cuenta fue dada de baja correctamente.": "Votre compte a bien été supprimé.",

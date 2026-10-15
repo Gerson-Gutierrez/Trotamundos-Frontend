@@ -36,6 +36,8 @@ const ICONOS = {
   verTodo: 'image-multiple',
   siguiente: 'chevron-right',
   check: 'check',
+  verPassword: 'eye-outline',
+  ocultarPassword: 'eye-off-outline',
 };
 
 export default function Icono({ nombre, size = 18, color = colors.textoSecundario, style }) {

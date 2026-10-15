@@ -19,6 +19,8 @@ export default {
   "Cancelar": "Cancel",
   "Eliminar cuenta": "Delete account",
   "Contraseña": "Password",
+  "Mostrar contraseña": "Show password",
+  "Ocultar contraseña": "Hide password",
   "Tu contraseña actual": "Your current password",
   "Cuenta eliminada": "Account deleted",
   "Tu cuenta fue dada de baja correctamente.": "Your account was deleted successfully.",
